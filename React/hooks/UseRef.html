@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script crossorigin src='https://unpkg.com/react@18/umd/react.development.js'></script>
+    <script crossorigin src='https://unpkg.com/react-dom@18/umd/react-dom.development.js'></script>
+    <script src='https://unpkg.com/@babel/standalone/babel.min.js'></script>
+</head>
+<body>
+<div id='root'></div>
+
+<script type='text/babel'>
+    const { useState, useRef, useEffect } = React;
+
+    function Counter() {
+        const [count, setCount] = useState(0);
+
+        console.log("Counter 렌더링 됨..")
+        const increaseCount = () => {
+            setCount(count + 1);
+        };
+
+        return (
+
+            <>
+                <h1>count : {count}</h1>
+                <button onClick={increaseCount}> 카운트 증가</button>
+            </>
+        )
+    }
+
+    function Counter2(){
+        const [count, setCount] = useState(0);
+        let variable = 0;
+        const countRef = useRef(0);
+
+        console.log("Counter2 렌더링 됨..");
+        const increaseCount = () => {
+            setCount(count + 1);
+        };
+
+        const increaseVariable = () => {
+            variable += 1;
+            console.log(`variable : ${variable}`);
+        };
+
+        const increaseCountRef = () => {
+            countRef.current = countRef.current + 1;
+            console.log(`current : ${countRef.current}`)
+            //현재가지고있는 상태값을 참조.
+        }
+
+        return (
+
+            <>
+                <h1>count : {count}</h1>
+                <h1>variable : { variable }</h1>
+                <button onClick={increaseCount}>카운트증가</button>
+                <button onClick={increaseVariable}>variable증가</button>
+                {/*variable이 계속 증가하지만, 출력되지 않음 + state객체의 상태값이 변하면 초기화됨*/}
+                <button onClick={increaseCountRef}>카운트 ref 증가</button>
+                {/* reRendering이 일어나도 useRef를 이용하는 변수는 값이 변하지 않음. */}
+            </>
+        )
+    }
+
+    function LoginComponent(){
+        const [form, setForm] = useState({
+            username : "",
+            password : ""
+        });
+
+        /* 렌더링 이전에 동작하기 때문에 최초에는 undefined가 출력된다. */
+        const usernameRef = useRef();
+        console.log(usernameRef); // 랜더링 이전에는 undefined
+
+        useEffect(() => {
+            console.log(usernameRef);
+
+            usernameRef.current.focus();
+        }, []); // []이거 안해주면 계속 focus 잡힘..
+
+        const onChangeHandler = (e) => {
+            setForm({
+                ...form,
+                [e.target.name] : e.target.value
+            });
+        }
+
+        const onClickHandler = () => {
+
+            alert(`username : ${ form.username } \npassword :${form.password}`)
+            setForm({
+                username: "",
+                password: ""
+            });
+
+            usernameRef.current.focus();
+            //리랜더링이 일어나도 focus를 해줌.
+        }
+
+        return (
+            <>
+                <input type="text"
+                       name="username"
+                       ref={usernameRef}
+                       placeholder = "username"
+                       value={ form.username }
+                       onChange={ onChangeHandler }
+                />
+                <br />
+                <input
+                    type="text"
+                    name="password"
+                    placeholder="password"
+                    value={form.password}
+                    onChange={ onChangeHandler}
+                />
+                <button onClick ={ onClickHandler }>로그인</button>
+            </>
+        );
+
+
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<LoginComponent />);
+
+</script>
+</body>
+</html>
