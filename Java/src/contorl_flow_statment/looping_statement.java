@@ -9,9 +9,9 @@ public class looping_statement {
 
         looping_statement app = new looping_statement();
 
-//        app.testSimpleForStatement();
-//        app.oneToTen();
-//        app.testForExample3();
+//        App.testSimpleForStatement();
+//        App.oneToTen();
+//        App.testForExample3();
         app.testSimpleWhileStatement();
     }
 

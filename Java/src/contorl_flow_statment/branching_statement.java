@@ -5,8 +5,8 @@ public class branching_statement {
     public static void main(String[] args) {
 
         branching_statement app = new branching_statement();
-//        app.testSimpleBreakStatement();
-//        app.testSimpleBreakStatement2();
+//        App.testSimpleBreakStatement();
+//        App.testSimpleBreakStatement2();
         app.testJumpBreak();
     }
 
