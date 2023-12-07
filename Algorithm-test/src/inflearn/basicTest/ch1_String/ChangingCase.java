@@ -2,7 +2,7 @@ package inflearn.basicTest.ch1_String;
 
 import java.util.Scanner;
 
-class ChaningCase {
+class ChangingCase {
 
     public String Solution(String str) {
 
@@ -13,12 +13,12 @@ class ChaningCase {
             } else answer += Character.toLowerCase(c);
         }
 
-        return str;
+        return answer;
     }
 
     public static void main(String[] args) {
 
-        ChaningCase main = new ChaningCase();
+        ChangingCase main = new ChangingCase();
         Scanner sc = new Scanner(System.in);
         String str = sc.nextLine();
 
