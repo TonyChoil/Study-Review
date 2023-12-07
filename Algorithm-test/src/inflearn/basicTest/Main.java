@@ -2,27 +2,47 @@ package inflearn.basicTest;
 
 import java.util.Scanner;
 
-class Main {
-    public int solution(String str, char c){
-
-        int count = 0;
-        c = Character.toLowerCase(c);
-        for(char x : str.toLowerCase().toCharArray()){
-
-            if(x == c ) count++;
+public class Main {
+    //    public String solution(String str) {
+//        char[] ch = str.toCharArray();
+//        int small = 0;
+//        int large = ch.length - 1;
+//        while (small < large) {
+//            if ((ch[small] >= 'A' && ch[small] <= 'z') && (ch[large] >= 'A' && ch[large] <= 'z')) {
+//                char tmp;
+//                tmp = ch[small];
+//                ch[small] = ch[large];
+//                ch[large] = tmp;
+//            }
+//            small++;
+//            large--;
+//        }
+//        String answer = String.valueOf(ch);
+//        return answer;
+//    }
+public String solution(String str) {
+    String answer;
+    char[] ch = str.toCharArray();
+    int small = 0, large = str.length() - 1;
+    while (small < large) {
+        if (!Character.isAlphabetic(ch[small])) small++;
+        else if (!Character.isAlphabetic(ch[large])) large--;
+        else {
+            char tmp = ch[small];
+            ch[small] = ch[large];
+            ch[large] = tmp;
+            small++;
+            large--;
         }
-
-        return count;
     }
+    answer = String.valueOf(ch);
+    return answer;
+}
 
     public static void main(String[] args) {
-
+        Main main = new Main();
         Scanner sc = new Scanner(System.in);
-        String str = sc.nextLine();
-        char c = sc.next().charAt(0);
-
-        Main T = new Main();
-
-        System.out.println(T.solution(str, c));
+        String str = sc.next();
+        System.out.println(main.solution(str));
     }
 }
