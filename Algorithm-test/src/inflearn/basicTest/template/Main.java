@@ -14,6 +14,6 @@ public String solution(String str) {
         Main main = new Main();
         Scanner sc = new Scanner(System.in);
         String str = sc.next();
-//        System.out.println(main.solution(str));
+        System.out.println(main.solution(str));
     }
 }
