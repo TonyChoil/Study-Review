@@ -3,7 +3,7 @@ package inflearn.basicTest.ch1_String;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class wordReverse {
+public class WordReverse {
 
     static Scanner sc = new Scanner(System.in);
 
@@ -45,7 +45,7 @@ public class wordReverse {
     public static void main(String[] args) {
 
 
-        wordReverse main = new wordReverse();
+        WordReverse main = new WordReverse();
         int num = sc.nextInt();
         String[] str = new String[num];
         for (int i = 0; i < str.length; i++) {
