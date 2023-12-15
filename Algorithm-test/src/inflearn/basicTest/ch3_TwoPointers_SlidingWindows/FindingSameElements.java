@@ -1,20 +1,31 @@
-package inflearn.basicTest.template;
-
-import inflearn.basicTest.ch2_Array.Mountaintop;
+package inflearn.basicTest.ch3_TwoPointers_SlidingWindows;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Scanner;
 
-public class Main {
+public class FindingSameElements {
 
     public ArrayList<Integer> solution(int n, int m, int[] arr1, int[] arr2) {
         ArrayList<Integer> answer = new ArrayList<>();
-
+        Arrays.sort(arr1);
+        Arrays.sort(arr2);
+        int p1 = 0, p2 = 0;
+        while(p1 < n && p2 < m){
+            if(arr1[p1] == arr2[p2]){
+                answer.add(arr1[p1]);
+                p1++;
+                p2++;
+            }else if(arr1[p1] < arr2[p2]) p1++;
+            else p2++;
+        }
+        answer.sort(Collections.reverseOrder());
         return answer;
     }
 
     public static void main(String[] args) {
-        Main main = new Main();
+        FindingSameElements main = new FindingSameElements();
         Scanner sc = new Scanner(System.in);
         int n = sc.nextInt();
         int[] arr1 = new int[n];

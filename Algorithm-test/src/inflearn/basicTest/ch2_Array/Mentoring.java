@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class Mentoring {
 
-//    public int solution(int n, int m, int[][] arr) {
+    //    public int solution(int n, int m, int[][] arr) {
 //        int answer = 0;
 //        for(int i = 1; i <= n; i++){ //i = 각 학생
 //            int[] studentNum = new int[n+1];
@@ -28,22 +28,20 @@ public class Mentoring {
 //    }
     public int solution(int n, int m, int[][] arr) {
         int answer = 0;
-        for(int i = 1; i <= n; i++){
-            for(int j = 1; j <= n; j++){
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= n; j++) {
                 int cnt = 0;
-                for(int k = 0; k < m; k++){
+                for (int k = 0; k < m; k++) {
                     int pi = 0, pj = 0;
-                    for(int s = 0; s < n; s++){
-                        if(arr[k][s] == i) pi=s;
-                        if(arr[k][s] == j) pj=s;
+                    for (int s = 0; s < n; s++) {
+                        if (arr[k][s] == i) pi = s;
+                        if (arr[k][s] == j) pj = s;
                     }
-                    if(pi>pj) cnt++;
+                    if (pi < pj) cnt++;
                 }
-                if(cnt == m) answer++;
+                if (cnt == m) answer++;
             }
         }
-
-
         return answer;
     }
 
