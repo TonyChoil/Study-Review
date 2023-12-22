@@ -1,4 +1,4 @@
-package inflearn.basicTest.ch3_TwoPointers_SlidingWindows;
+package inflearn.basicTest.ch4_HashMap_TreeSet;
 
 import java.util.*;
 class Anagram {
