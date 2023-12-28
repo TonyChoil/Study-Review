@@ -4,8 +4,8 @@ import java.util.Scanner;
 
 public class Main {
 
-    public int solution(int n, int m, int[] arr) {
-        int answer = 0;
+    public String solution(String str) {
+        String answer = "";
 
         return answer;
     }
@@ -13,12 +13,7 @@ public class Main {
     public static void main(String[] args) {
         Main main = new Main();
         Scanner sc = new Scanner(System.in);
-        int n = sc.nextInt();
-        int m = sc.nextInt();
-        int[] arr = new int[n];
-        for (int i = 0; i < n; i++) {
-            arr[i] = sc.nextInt();
-        }
-        System.out.print(main.solution(n, m, arr));
+        String str = sc.next();
+        System.out.print(main.solution(str));
     }
 }
