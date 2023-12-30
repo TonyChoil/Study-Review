@@ -8,12 +8,12 @@ public class ClawMachineGame {
     public int solution(int[][] board, int[] moves) {
         int answer = 0;
         Stack<Integer> stack = new Stack<>();
-        // for문 b번만큼 돌면서, board[a번][moves[i]]
-        for(int line : moves){
+        for(int a : moves){
+            int line = a-1;
             for(int i = 0; i < board.length; i++){
-                if(board[i][line-1] != 0){
-                    int tmp = board[i][line-1];
-                    board[i][line-1] = 0;
+                if(board[i][line] != 0){
+                    int tmp = board[i][line];
+                    board[i][line] = 0;
                     if(!stack.isEmpty() && stack.peek() == tmp) {
                         answer += 2;
                         stack.pop();
