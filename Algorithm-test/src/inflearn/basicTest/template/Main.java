@@ -14,12 +14,9 @@ public class Main {
         Main main = new Main();
         Scanner sc = new Scanner(System.in);
         int n = sc.nextInt();
-        int[] arr = new int[n];
-        for(int i = 0; i < n; i++){
-            arr[i]= sc.nextInt();
-        }
-        for(int i : main.solution(n, arr)){
-            System.out.print(i + " ");
+        for(int i = 0; i < n; i++) {
+        	int a = sc.nextInt();
+        	int b = sc.nextInt();
         }
     }
 }
