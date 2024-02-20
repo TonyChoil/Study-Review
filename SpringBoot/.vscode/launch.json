@@ -5,6 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "SampleBootApp1Application",
+            "request": "launch",
+            "mainClass": "com.example.sample1app.SampleBootApp1Application",
+            "projectName": "SampleBootApp1"
+        },
+        {
+            "type": "java",
+            "name": "SampleBootApp1Application",
+            "request": "launch",
+            "mainClass": "com.example.sample1app.SampleBootApp1Application",
+            "projectName": "sample1app"
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
