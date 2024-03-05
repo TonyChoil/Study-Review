@@ -1,4 +1,4 @@
-package DreamHanks;
+package dreamHanks;
 
 import java.io.BufferedReader;
 import java.io.IOException;

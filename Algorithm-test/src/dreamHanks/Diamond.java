@@ -1,4 +1,4 @@
-package DreamHanks;
+package dreamHanks;
 
 public class Diamond {
 
