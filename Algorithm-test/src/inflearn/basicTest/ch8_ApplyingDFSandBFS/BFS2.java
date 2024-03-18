@@ -8,7 +8,7 @@ import java.util.*;
 //		this.y=y;
 //	}
 //}
-class Main {
+class BFS2 {
 	static int[] dx={-1, 0, 1, 0};
 	static int[] dy={0, 1, 0, -1};
 	static int[][] board, dis;
@@ -30,7 +30,7 @@ class Main {
 	}
 
 	public static void main(String[] args){
-		Main T = new Main();
+		BFS2 T = new BFS2();
 		Scanner kb = new Scanner(System.in);
 		m=kb.nextInt();
 		n=kb.nextInt();
