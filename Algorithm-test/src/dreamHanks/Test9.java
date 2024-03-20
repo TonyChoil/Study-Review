@@ -26,8 +26,8 @@ public class Test9 {
 	public int sol(ArrayList<Attend> arr) {
 		int answer = 0;
 		int cnt = 0;
-		for(int i = 0; i < arr.size(); i++) {
-			if(arr.get(i).stat == 'a') {
+		for(Attend at : arr){
+			if(at.stat == 'a') {
 				cnt++;
 				answer = Math.max(cnt, answer);
 			}
