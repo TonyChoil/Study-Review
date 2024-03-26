@@ -1,6 +1,7 @@
 package inflearn.basicTest.ch9_GreedyAlgorithm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.PriorityQueue;
 import java.util.Scanner;
 
@@ -27,17 +28,28 @@ public class Greedy5 {
 		// pQ에서 빼야 할 정보 : 가중치가장낮은것 + 
 		PriorityQueue<Edge> pQ = new PriorityQueue<>();
 		pQ.offer(new Edge(1, 0));
+		int cnt = 0;
 		while(!pQ.isEmpty()) {
 			Edge tmp = pQ.poll();
 			int now = tmp.vex;
 			int cost = tmp.cost;
 			ArrayList<Edge> arr = graph.get(now);
+			if(answer[now] < cost) continue;
 			for(Edge eg : arr) {
+				System.out.println(cnt++);
+				//현재 cost랑 new cost를 더했을 때 최소값을 뽑아야함.
 				if(cost + eg.cost < answer[eg.vex]) {
 					answer[eg.vex] = cost + eg.cost;
+					pQ.offer(new Edge(eg.vex, cost+eg.cost));
 				}
 			}
 		}
+		for(int i = 2; i < answer.length; i++) {
+			if(answer[i] == Integer.MAX_VALUE) {
+				System.out.println(i + " : impossible");
+			}else System.out.println(i + " : " + answer[i]);
+		}
+
 	}
 	
 	public static void main(String[] args) {
