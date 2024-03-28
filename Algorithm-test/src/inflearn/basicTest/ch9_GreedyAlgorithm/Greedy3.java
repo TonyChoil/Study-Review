@@ -16,7 +16,7 @@ class Time implements Comparable<Time>{
     }
 }
 
-class Main {
+class Greedy3 {
 	public int solution(ArrayList<Time> arr){
 		int answer=Integer.MIN_VALUE;
 		Collections.sort(arr);
@@ -30,7 +30,7 @@ class Main {
 	}
 
 	public static void main(String[] args){
-		Main T = new Main();
+		Greedy3 T = new Greedy3();
 		Scanner kb = new Scanner(System.in);
 		int n=kb.nextInt();
 		ArrayList<Time> arr = new ArrayList<>();

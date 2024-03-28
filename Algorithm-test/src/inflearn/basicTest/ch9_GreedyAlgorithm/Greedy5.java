@@ -28,7 +28,6 @@ public class Greedy5 {
 		// pQ에서 빼야 할 정보 : 가중치가장낮은것 + 
 		PriorityQueue<Edge> pQ = new PriorityQueue<>();
 		pQ.offer(new Edge(1, 0));
-		int cnt = 0;
 		while(!pQ.isEmpty()) {
 			Edge tmp = pQ.poll();
 			int now = tmp.vex;
@@ -36,7 +35,6 @@ public class Greedy5 {
 			ArrayList<Edge> arr = graph.get(now);
 			if(answer[now] < cost) continue;
 			for(Edge eg : arr) {
-				System.out.println(cnt++);
 				//현재 cost랑 new cost를 더했을 때 최소값을 뽑아야함.
 				if(cost + eg.cost < answer[eg.vex]) {
 					answer[eg.vex] = cost + eg.cost;
