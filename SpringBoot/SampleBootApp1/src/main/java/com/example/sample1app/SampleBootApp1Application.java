@@ -2,37 +2,37 @@ package com.example.sample1app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-//@SpringBootApplication
-//@RestController
+@SpringBootApplication
+@Controller
 public class SampleBootApp1Application {
 
-	DataObject[] data = {
-			new DataObject("noname", "no email address", 0),
-			new DataObject("taro", "taro@yamada",28),
-			new DataObject("hanako", "hanako@flower", 17),
-			new DataObject("jiro", "jiro@change", 6)
-	};
+//	DataObject[] data = {
+//			new DataObject("noname", "no email address", 0),
+//			new DataObject("taro", "taro@yamada",28),
+//			new DataObject("hanako", "hanako@flower", 17),
+//			new DataObject("jiro", "jiro@change", 6)
+//	};
 	
 	public static void main(String[] args) {
 		SpringApplication.run(SampleBootApp1Application.class, args);
 	}
-	@RequestMapping("/")
-	public String index1() {
-		
-		return "메인화면";
-	}
+//	@RequestMapping("/")
+//	public String index() {
+//		
+//		return "메인화면";
+//	}
 	
-	@RequestMapping("/{num}")
-	public DataObject index(@PathVariable int num) {
-		
-		int n = num < 0 ? 0 : num >= data.length ? 0 : num;
-		return data[n];
-	}
+//	@GetMapping("/{num}")
+//	public DataObject index(@PathVariable int num) {
+//		int n = num < 0 ? 0 : num >= data.length ? 0 : num;
+//		return data[n];
+//	}
 }
 
 class DataObject{
