@@ -11,20 +11,50 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller("/")
 public class HelloController {
 
-	@RequestMapping(value="/", method=RequestMethod.GET)
-	public ModelAndView index(ModelAndView mv) {
-		mv.addObject("msg", "名前を書いてください");
+	@RequestMapping("/{month}")
+	public ModelAndView index(@PathVariable("month") int month, ModelAndView mv) {
 		mv.setViewName("index");
+		mv.addObject("msg", month + "月は？");
+		mv.addObject("month", month);
 		return mv;
 	}
 	
-	@RequestMapping(value = "/", method=RequestMethod.POST)
-	public ModelAndView form(@RequestParam("text1") String str, ModelAndView mv) {
-		mv.addObject("msg", "こんにちは" + str + "さん！");
-		mv.addObject("value", str);
-		mv.setViewName("index");
-		return mv;
-	}
+//	@RequestMapping("/other")
+//	public String other() {
+//		return "redirect:/";
+//	}
+//	
+//	@RequestMapping("/home")
+//	public String home() {
+//		return "forward:/";
+//	}
+	
+//	@RequestMapping(value = "/", method=RequestMethod.POST)
+//	public ModelAndView form(@RequestParam(value="check1") boolean check1,
+//							 @RequestParam(value="radio1", required = false)String radio1,
+//							 @RequestParam(value="select1", required = false)String select1,
+//							 @RequestParam(value="select2", required = false)String[] select2,
+//							 ModelAndView mv) {
+//		
+//		String res = "";
+//		try {
+//			res=  "check:" + check1 +
+//					" radio:" + radio1 +
+//					" select:" + select1 +
+//					" select2:";
+//		}catch (NullPointerException e) {}
+//		try {
+//			res += select2[0];
+//			for(int i = 1; i  < select2.length; i++) {
+//				res += ", " + select2[i];
+//			}
+//		} catch (NullPointerException e) {
+//			res += "null";
+//		}
+//		mv.addObject("msg", res);
+//		mv.setViewName("index");
+//		return mv;
+//	}
 	
 	/* Model */
 //	@RequestMapping("/{num}")

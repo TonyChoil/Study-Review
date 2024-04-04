@@ -8,17 +8,21 @@
 <body class="container">
 	<h1 class="display-4 mb-4">Hello page</h1>
 	<p th:text="${msg}"></p>
-	<div class="h6 alert alert-primary">
-		<form method="post" action=".">
-			<div class="input-group">
-				<input type="text" class="form-control me-1"
-					name="text1" th:value="${value}" />
-				<span class="input-group-btn">
-					<input type="submit" class="btn btn-primary px-4" value="Click" />
-				</span>
-			</div>
-		</form>
+	<div th:switch="${month}">
+		<p class="alert alert-primary" th:case="1" th:text="${month} + 月は、正月。"></p>
+		<p class="alert alert-primary" th:case="2" th:text="${month} + 月は、冬。"></p>
+		<p class="alert alert-primary" th:case="3" th:text="${month} + 月は、春。"></p>
+		<p class="alert alert-primary" th:case="4" th:text="${month} + 月は、春。"></p>
+		<p class="alert alert-primary" th:case="5" th:text="${month} + 月は、春。"></p>
+		<p class="alert alert-primary" th:case="6" th:text="${month} + 月は、夏。"></p>
+		<p class="alert alert-primary" th:case="7" th:text="${month} + 月は、夏。"></p>
+		<p class="alert alert-primary" th:case="8" th:text="${month} + 月は、夏。"></p>
+		<p class="alert alert-primary" th:case="9" th:text="${month} + 月は、秋。"></p>
+		<p class="alert alert-primary" th:case="10" th:text="${month} + 月は、秋。"></p>
+		<p class="alert alert-primary" th:case="11" th:text="${month} + 月は、秋。"></p>
+		<p class="alert alert-primary" th:case="12" th:text="${month} + 月は、師走。"></p>
 	</div>
+
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </html>
