@@ -10,12 +10,14 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller("/")
 public class HelloController {
-
-	@RequestMapping("/{month}")
-	public ModelAndView index(@PathVariable("month") int month, ModelAndView mv) {
+	private boolean flag= false;
+	
+	@RequestMapping("/")
+	public ModelAndView index(ModelAndView mv) {
+		flag = !flag;
+		mv.addObject("flag", flag);
 		mv.setViewName("index");
-		mv.addObject("msg", month + "月は？");
-		mv.addObject("month", month);
+		mv.addObject("msg", "messages are shown");
 		return mv;
 	}
 	
