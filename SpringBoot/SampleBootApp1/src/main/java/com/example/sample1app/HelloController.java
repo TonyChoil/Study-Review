@@ -21,14 +21,12 @@ public class HelloController {
 	
 	@RequestMapping("/")
 	public ModelAndView index(ModelAndView mv) {
-		String[] data = {"Windows", "macOS", "Linux", "ChromeOs"};
 		mv.setViewName("index");
 		mv.addObject("title", "Groovy templates");
-		mv.addObject("msg", "This is sample message!!");
-		mv.addObject("data", data);
+		mv.addObject("msg", "This is Layout templates!");
 		
 		return mv;
-	}
+	}		
 //	@RequestMapping("/")
 //	public ModelAndView index(ModelAndView mv) {
 //		mv.setViewName("index");
