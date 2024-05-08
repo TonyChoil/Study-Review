@@ -6,6 +6,7 @@ import java.io.Writer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,6 +16,8 @@ import org.springframework.web.servlet.ModelAndView;
 import com.example.sample1app.repositories.PersonRepository;
 import com.samskivert.mustache.Mustache.Lambda;
 import com.samskivert.mustache.Template.Fragment;
+
+import jakarta.transaction.Transactional;
 
 @Controller("/")
 public class HelloController {
@@ -28,10 +31,20 @@ public class HelloController {
 		mv.addObject("title", "Hello page");
 		mv.addObject("msg", "This is JPA sample data.");
 		Iterable<Person> list = repository.findAll();
-		mv.addObject("data", list);
+		//JpaRepositor에 정의되어있는 메소드
+		mv.addObject("data", list);  
 		
 		return mv;
 	}		
+	
+	@RequestMapping(value="/", method = RequestMethod.POST)
+	@Transactional
+	public ModelAndView form(
+			@ModelAttribute("formModel") Person Person, ModelAndView mv) {
+		repository.saveAndFlush(Person);
+		return new ModelAndView("redirect:/");
+	}
+	
 //	@RequestMapping("/")
 //	public ModelAndView index(ModelAndView mv) {
 //		mv.setViewName("index");
