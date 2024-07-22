@@ -1,8 +1,12 @@
 
 ![alt text](image-19.png)
+
 title:그림으로 이해하는 AWS 구조와 기술
+
 publisher : 길벗
-writer : 오가사와라 시게타가 
+
+writer : 오가사와라 시게타가
+
 ## 1장 아마존 웹 서비스 기초 지식 
 **AWS: Amazon Web Services**
 
