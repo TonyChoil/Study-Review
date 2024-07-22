@@ -1141,6 +1141,43 @@ SES: 메일을 수신하면 함수 동작
 동기적 : 처리라 끝날 때까지 기다림
 비동기적 : 반대
 
+### AWS 컨테이너 서비스 : 어플리케이션 단위로 실행할 수 있는 가상 환경
+AWS는 Docker 형식의 컨테이너를 지원한다. 
+
+컨테이너 : 프로그램 실행 환경을 분리하는 방식. 
+VirtualBox나 VMware와 같은 가상 서버는 OS 전체가 가상 환경이다. 
+하지만 컨테이너는 APP프로그램만 컨테이너로 분리하고, APP에 필요한 라이브러리나 데이터를 포함하고 있다.
+->가볍고 관리용이
+
+보통 레지스트리 서비스 / 오케스트레이션 서비스가 필요
+*레지스트리 서비스 : 컨테이너를 배치, 관리
+-Amazon Elastic Container Registry(ECR)
+*오케트레이션 서비스 : 컨테이너로 분리된 어플 실행과 컨테이너의 조정을 수행
+-Amazon Elastic Container Service(ECS) / Amazon Elastic Kubernetes Service(EKS)
+                                          (쿠버네티스와 호환)
+![alt text](image-23.png)
+
+#### 컨테이너 서비스의 용어
+컨테이너 : 프로그램 전체를 분리하여 실행하는 시스템
+도커 이미지 : 컨테이너를 구성하는 프로그램이나 설정
+도커 허브 : 도커 이미지를 등록하는 서비스. AWS는 Docker Hub로 ECR을 사용함
+Amazon EC2 Container Registory(ECR) : 도커 이미지를 등록하는 서비스
+Amazon ECS : 도커 이미지에서 EC2나 AWS Fargate에 컨테이너를 생성하여 실행하는 서비스
+쿠버네티스 : 컨테이너를 종합 관리하는 방식
+AWS Fargate : 컨테이너를 실행하는 EC2를 자동으로 관리하기 위한 방식 
+
+#### AWS Fargate 방식
+필요에 따라 EC2 인스턴스를 기동하고, EC2 안에 컨테이너를 할당하고 실행하는 방식
+
+#### 그 외 
+AWS에서 머신 러닝을 수행하려면
+Amazon SageMaker / AWS Deep Learning AMI를 사용한다.
+
+Amazon SageMaker는 머신 러닝 모델을 간단하고 빠르게 구축, 트레이닝, 호스트 환경에 배포하기 위한
+완전 관리형 서비스. 머신 러닝용 각종 알고리즘, 학습 프레임워크를 조합한 주피터 노트북(Jupyter Notebook) 인스턴스를 사용하여 모델 구축과 트레이닝을 수행한다.
+
+AWS Deep Learning AMI는 딥 러닝 프레임워크와 인터페이스를 갖춘 Amazon EC2 인스턴스. SageMaker보다 환경과
+방법의 선택의 폭이 넓고 사용자 정의가 가능하며 머신 러닝에 대한 심층 연구에 적합.
 
 
 
