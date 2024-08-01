@@ -1441,3 +1441,31 @@ but scale out 규모만큼 지원할수 있는 아키텍쳐 등을 잘 궁구해
   - 최대 / 최소 / 원하는 인스턴스 숫자
   - EBL연동 등..
 
+### 13강 ELB(Elastic Load Balancer)
+트래픽을 하나의 경로로 받아서 인스턴스에 분산시켜줌.
+![alt text](image-34.png)
+
+```
+기존의 문제 : 유저가 인스턴스에 직접접근하게되면 주소를 알아야 함.
+오토스케일링으로 증가한 인스턴스는 증감에 따라 IP가 계속 바뀌기 때문에 활용의 거의 불가능. ->로드밸런서의 필요
+```
+
+#### Elastic Load Balancer
+- 다수의 서비스에 트래픽을 분산 시켜주는 서비스
+- Health Check : 직접 트래픽을 발생시켜 Instance가 살아있는지 체크
+- Autoscaling과 연동 가능
+- 여러 가용역역에 분산 가능
+- 지속적으로 IP주소가 바뀌며 IP 고정 불가능 : 항상 도메인 기반으로 사용
+
+*4가지 종류
+- Application Load balancer 
+ - 똑똑한 녀석
+ - 트래픽을 모니터링하여 라우팅 가능
+ - 예)image.sample.com -> 이미지 서버로, web.sample.com->웹 서버로 트래픽 분산
+- Network Load Balancer 
+  - 빠른 녀석
+  - TCP 기반 빠른 트래픽 분산
+  - Elastic IP 할당 가능
+- Classic Load Balancer 
+  - 현재는 잘 사용되지 않음
+- Gateway Load Balancer
