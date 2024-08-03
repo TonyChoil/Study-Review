@@ -1469,3 +1469,110 @@ but scale out 규모만큼 지원할수 있는 아키텍쳐 등을 잘 궁구해
 - Classic Load Balancer 
   - 현재는 잘 사용되지 않음
 - Gateway Load Balancer
+  - 먼저 트래픽 체크하는 녀석
+  - 가상 어플라이언스 배포/확장 관리를 위한 서비스
+
+#### 대상 그룹(Target Group)
+- ALB가 라우팅 할 대상의 집합
+- 구성
+  - 3+1가지 종류
+    - Instance
+    - IP
+    - Lambda
+    - ALBs
+  - 프로토콜(HTTP, HTTPS, gRPC 등)
+  - 기타 설정
+    - 트래픽 분산 알고리즘, 고정 세션 등
+![alt text](image-35.png)
+
+주소, 포트 등을 읽어서 대상 그룹(target group)으로 분산시켜준다.
+
+만약 인스턴스가 서버에는 올라가있지만 WebServer가 죽은 상태라면, 해당 인스턴스로 로드밸런서가 트래픽을 보내도 답장이 안오기 때문에 502BadGateway가 뜨게 됨. 
+그래서 Autosaling 입장에서는 인스턴스가 올라가있게 되지만(healthy), ELB입장에서는 unhealthy 가 뜸.
+->AutoScaling그룹에서 설정을 ELB상태확인 체크하면 ELB-unhealthy의 경우 Autoscaling에서 해당 Instance를 Terminate시킴.
+
+### 14강 EFS(Elastic File System)
+AWS클라우드 서비스와 온프레미스 리소스에서 사용할 수 있는, 간단하고 확장 가능하며 탄력적인 완전관리형 NFS 파일 시스템을 제고안다.
+이 제품은 어플을 중단하지 안고 온디맨드 방식으로 페타바이트 규모까지 확장하도록 구축되어, 파일을 추가하고 제거할 때 자동으로 확장하고 축솨며 확장 규모에 맞게 용량을 프로비저닝 및 관리해준다. 
+
+*Amazon EFS
+- NFS 기반 공유 스토리지 서비스 
+  - 따로 용량을 지정할 필요 없이 사용한 만큼 용량이 증가 <-> EBS는 미리 크기를 지정해야 함
+- 페타바이트 단위까지 확장 가능
+- 몇 천개의 동시 접속 유지 가능 
+- 데이터는 여러 AZ에 나누어 분산 저장
+- 쓰기 후 읽기(Read After Write) 일관성 : EFS에서 변경하면, 연결되어 있는 Instance 전체에 바로영향을 줄 수 있음
+![alt text](image-38.png)
+- Private Service : AWS 외부에서 접속 불가능
+  - AWS외부에서 접속위해서는 VPN, Direct Connect 등 별도로 VPC와 연결 필요
+- 각 가용영역에 Mount Target을 두고 각각의 가용영역에서 해당 Mount Target로 접근 (하나의 subnet은 하나의 가용영역이다. )
+- Linux Only
+![alt text](image-36.png)
+(Mount Target내에서 소통하기 때문에 바로 외부접속 불가능)
+
+#### Amazon EFS 퍼포먼스 모드
+- General Purpose : 가장 보편적인 모드. 거의 대부분 경우 사용 권장
+- Max IO : 매우 높은 IOPS가 필요한 경우
+  - 빅데이터, 미디어 처리 등
+
+#### Throughput 모드
+- Bursting Throughput 모드 : 낮은 Throughput일 때 크레딧을 모아서 높은 Throughput일 때 사용 (EC2 T타입과 비슷한 개념)
+- Provisioned Throughput : 미리 지정한 만큼의 Throughput을 미리 확보해두고 사용(높은 Throughput이 필요할 때 선택)
+
+#### 스토리지 클래스
+- EFS Standard : 3개 이상의 가용영역에 보관
+- EFS Standard-IA : 3개 이상의 가용영역에 보관, 조금 저렴한 비용 대신 데이터를 가져올 때 비용 발생
+- EFS One Zone : 하나의 가용영역에 보관 -> 저장된 가용영역의 상황에 영향을 받을 수 있음(날라가면 끝) (덜 중요한 데이터)
+- EFS One Zone - IA : 저장된 가용영역의 상황에 영향을 받을 수 있음, 데이터를 가져올 때 비용 발생(가장 저렴) : 별로 안중요하고, 엑세스 낮은 데이터
+
+#### Amazon FSx 
+(EFS의 윈도우 버전 / 온프레미스에서 액세스 가능)
+![alt text](image-37.png)
+
+### 15강 사설IP & NAT & CIDR
+#### Private IP 
+‐ 한정된 IP주소를 최대한 활용하기 위해 IP주소를 분할하고자 만든 개념
+  - IPv4기준으로 최대 IP개수는 43억개
+- 사설망
+  - 사설망 내부에는 외부 인터넷 망으로 통신이 불가능한 사설 IP로 구성
+  - 외부로 통신할 때는 통신 가능한 공인 IP로 나누어 사용
+  - 보통 하나의 망에는 사설 IP를 부여받은 기기들과 NAT 기능을 갖춘 Gateway로 구성
+- 참고:IPv6 IP 개수 : 2의128제곱(320간)..? 약 43억x43억x43억x43억 개
+
+#### NAT(Network Address Translation)
+- NAT
+  - 사설 IP가 공용 IP로 통신 할 수 있도록 주소를 변환해 주는 방법
+  - 3가지 종류
+    - Dynamic NAT : 1개 사설 IP를 NAT Pool에서 가용 가능한 공인 IP로 연결(사용안되는거 돌려쓰자~~)
+    ![alt text](image-39.png)
+    - Static NAT : 하나의 사설 IP를 고정된 하나의 공인 IP로 연결
+      - AWS Internet Gateway가 사용하는 방식
+    ![alt text](image-40.png)
+  - PAT(Port Address Translation) : 많은 사설 IP를 하나의 공인 IP로 연결 (집, 직장 등등..)
+    - NAT Gateway/Nat Instance가 사용하는 방식 
+    ![alt text](image-41.png)
+    트래픽을 내보낼 때 SRC Port를 기억해서 내보내고, 다시 찾아서 돌려줌
+
+#### Classless Inter Domain Routing(CIDR)
+CLassless Inter Domain Routing
+- IP는 주소의 영역을 여러 네트워크 영역으로 나누기 위해 IP를 묶는 방식
+- 여러 개의 사설망을 구축하기 위해 망을 나누는 망법
+
+#### CIDR Block / CIDR Noation
+- CIDR Block : IP 주소의 집합
+- CIDR Notation : CIDR Block을 표시하는 방법
+  - 네트워크 주소와 호스트 주소로 구성
+  - 각 호스트 주소 숫자 만큼의 IP를 가진 네트워크 망 형성 가능
+- A.B.C.D/E 형식
+  - 예 : 10.0.1.0/24, 172.16.0.0/12 
+  - A.B.C.D: 네트워크 주소 + 호스트 주소 표시, E:0~32: 네트워크 주소가 몇 bit인지 표시
+
+#### 서브넷
+  - 네트워크 안의 네트워크
+  - 큰 네트워크를 잘게 쪼갠 단위
+  - 일정 IP주소의 범위를 보유
+    - 큰 네트워크에 부여된 IP범위를 조금씩 잘라 작은 단위로 나눈 후 각 서브넷에 할당
+![alt text](image-42.png)
+해당 화면의 경우 /16이기 때문에  32-16 = 16비트, 즉 2의16제곱만큼의 IP범위를 가진 큰 네트워크임.
+여기서 서브넷/24로 나눈다는 것은, 32-24 = 8비트의 서브넷 네트워크를 
+255개만큼 가질 수 있다는 것
