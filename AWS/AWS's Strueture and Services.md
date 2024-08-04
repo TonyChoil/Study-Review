@@ -1576,3 +1576,25 @@ CLassless Inter Domain Routing
 해당 화면의 경우 /16이기 때문에  32-16 = 16비트, 즉 2의16제곱만큼의 IP범위를 가진 큰 네트워크임.
 여기서 서브넷/24로 나눈다는 것은, 32-24 = 8비트의 서브넷 네트워크를 
 255개만큼 가질 수 있다는 것
+
+### 16강 VPC와 Subnet
+
+VPC는 원칙적으로 Public Internet에서 접근할 수 없다.
+AWS내부라고 하더라도, 원칙적으로는 Internet  Gateway를 거쳐서 Public EndPoint를 통해 AWS Servcie로 가게된다.
+![alt text](image-43.png)
+
+*Amazon EC2는 유일한 예외
+
+- VPC
+Virtual Private Could(VPC)는 사용자의 AWS 계정 전용 가상 네트워크 입니다. VPC는 AWS클라우드에서 다른 가상 네트워크와 논리적으로 분리되어 있습니다. Amazon EC2 인스턴스와 같은 AWS 리소스를 VPC에서 실행할 수 있습니다. IP 주소 범위와 VPC 범위를 설정하고 서브넷을 추가하고 보안 그룹을 연결할 다음 라우팅 테이블을 구성합니다.
+
+VPC = 가상으로 존재하는 데이터센터
+- 가상의 데이터센터
+- 외부에 격리된 네트워크 컨테이너 구성 가능
+- 리전 단위 
+VPC의 사용 사례
+- EC2, RDS, Lambda등의 AWS의 컴퓨팅 서비스 실행 
+- 다양한 서브넷 구성
+- 보안 설정(IP Block, 인터넷에 노출되지 않는 EC2등 구성)
+![alt text](image-44.png)
+
