@@ -1,1 +1,0 @@
-<jsp:forward page="/HelloWorld.do"></jsp:forward>
