@@ -1722,4 +1722,35 @@ Classless Inter-Domain Routing(CIDR)을 사용하면 네트워크 라우터에�
 
 CIDR의 작동 방식을 익히려면 CIDR 블록과 CIDR 표기법을 이해하는 것이 중요합니다.
 
+### 18강 NAT Gateway & Bastion Host 
 
+#### NAT Gateway
+"NAT 게이트웨이는 Amazon Private Cloud(Amazon VPC)의 프라이빗 서브넷에 있는 인스턴스에서 인터넷에 쉽게 연결하 수 있도록 지원하는 가용성이 높은 AWS 관리형 서비스입니다.
+
+NAT Gateway/NAT Instacne
+- Private 인스턴스가 외부의 인터넷과 통신하기 위한 통로
+- NAT Instance는 단일 EC2 인스턴스 / NAT Gateway는 AWS에서 제공하는 서비스 (NAT Gateway가 나오기 전까지 NAT Instance가 유일한 방법이었지만, NAT Gateway가 나오고나서는 거의 사용되지 않음. 간단한 테스트 정도.)
+- NAT Gateway/Instance는 모두 서부넷 단위
+  - Public Subnet에 있어야 함
+  - NAT Gateway는 서비스이기 때문에 자동 관리됨.
+![alt text](image-49.png)
+
+### Bastion Host
+- Private 인스턴스에 접근하기 위한 EC2 인스턴스
+(외부에서 들어가는 경로를 만들어준다.)
+(여러 한계로 실전에서는 잘 쓰이지 않는다.)
+(실전에서는 Session Manager가 보통 쓰임.)
+![alt text](image-50.png)
+
+### 19강 VPC - 생성 실습
+
+#### VPC 관련 배경지식
+- 커스텀 VPC 생성 시 만들어지는 리소스 : 라우팅 테이블, 기본 NACL, 기본 보안그룹
+  - 서브넷 생성 시 모두 기본 라우팅 테이블로 자동 연동
+- 서브넷 생서 시 AWS는 총 5개의 IP를 미리 점유함.
+- VPC에는 단 하나의 Internet Gateway만 생성 가능
+  - Internet Gateway 생성 후 직접 VPC에 연동 필요
+  - Internet Gateway는 자체적으로 고가용성/장애내구성을 확보
+- 보안 그룹은 VPC 단위
+- 서브넷은 가용영역 단위(1 서브넷 = 1 가용영역)
+- 가장 작은 서브넷 단위는 /24(11개, 16-5)
