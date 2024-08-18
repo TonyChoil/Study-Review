@@ -2007,3 +2007,35 @@ SSE S3와의 차이 : KMS서비스를 사용하고 있기 때문에, Encryption 
 - 별도의 서버 없이 웹사이트 호스팅 가능
 - 고가용성/장애 내구성을 확보
 - 사용 사례 : 대규모 접속이 예상되는 사전 예약 페이지, 홍보 페이지, 회사 웹사이트 등
+
+
+#### Amazon S3 Static Hosting과 권한
+- 정적 웹호스팅을 public으로 공개할 경우 : 불특정 다수에게 허용되는 권한 부여 필요
+- 불특정 다수가 접속할 수 있는 권한을 확보하려면
+  - S3 Block Public Access 해제 필요
+  - Bucket Policy에서 정책 허용 필요
+
+#### Amazon S3 Static Hosting의 활용
+Route 53에서 보유한 도메인으로 연결 가능
+- 단 버킷 명 = 호스팅 주소여야 가능
+- 예 : test.example.com으로 호스팅하고 싶다면, 버킷명도 "test.example.com" 필요
+
+#### Amazon CloudFront와 연동
+- 일반적으로 HTTPS 프로토콜 구현을 위해서는 CloudFront와 연동 필요
+- ACM을 통한 SSL 키 관리가 가장 편함
+- 보통 Public hosting의 활성화 대신 그대로 Private 모드로 두고 OAI/OAC 등을 활용해서 보안 강화
+
+#### 아키텍쳐(CloudFront)
+![alt text](image-61.png)
+
+#### 실습 
+S3 버킷 생성(mystatic.tony.com)
+- 퍼블릭제한 해제
+
+정적 웹 사이트 호스팅 편집 - 정적 웹사이트 호스팅 활성화로 변경
+
+html파일 업로드- 바로 mystatic.tony.com.s3~~~~에서 볼 수 있다.(퍼블릭 액세스)
+
+.s3~~를 떼고 mystatic.tony.com만가지고 엑세스 하는 법 
+ROUTE53에서 레코드 생성(레코드이름(mystatic), 유형, 리전선택)
+ 
