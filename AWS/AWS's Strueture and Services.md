@@ -700,8 +700,8 @@ Amazon Athena : SQL SELECT문으로 정보 처리
 
 S3 Select : S3 로 저장된 데이터 파일 하나에 SQL문을 사용하여 집계 및 검색 가능. CVS파일 JSON외에도 로그 사용되는 Apache Parquet 형식도 지원한다.
 
-Amazon Athena와 Amazon Redshit Spectrum
-Amazon S3에 저장된 데이트 분석 가능.
+Amazon Athena와 Amazon Redshift Spectrum
+Amazon S3에 저장된 데이터 분석 가능.
 
 S3 Select와 달리 어떤 대상에 대해 어떤 검색을 할지 사전 구성.
 대신 여러 파일을 대상으로 수행 가능.
