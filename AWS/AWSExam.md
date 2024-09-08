@@ -1856,6 +1856,5 @@ Amazon S3의 수명 주기 구성을 사용하면 버킷에 있는 객체의 수
 
 CloudFormation은 Quick Starts에서 사용합니다.
 
-245. 
 
 
