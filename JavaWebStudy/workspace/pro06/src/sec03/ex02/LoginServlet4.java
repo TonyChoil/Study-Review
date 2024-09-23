@@ -1,4 +1,4 @@
-package sec01.ex01;
+package sec03.ex02;
 
 import java.io.IOException;
 import javax.servlet.ServletConfig;
@@ -9,10 +9,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Servlet implementation class LoginServlet
+ * Servlet implementation class LoginServlet4
  */
-@WebServlet("/login")
-public class LoginServlet extends HttpServlet {
+@WebServlet("/login4")
+public class LoginServlet4 extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
 	public void init(ServletConfig config) throws ServletException {
@@ -20,20 +20,28 @@ public class LoginServlet extends HttpServlet {
 	}
 
 	public void destroy() {
-		System.out.println("destroy 메서드 호출");
+		System.out.println("destory 메서드 호출");
 	}
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String user_id = request.getParameter("user_id"); // input tag의 name 속성을 가져옴
-		String user_pw = request.getParameter("user_pw"); // input tag의 name 속성을 가져옴
-		System.out.println("아이디 : " + user_id);
-		System.out.println("비밀번호 : " + user_pw);
-		
-//		response.sendRedirect("http://localhost:8080/pro06/login.html");
+		System.out.println("get호출");
+		doHandle(request, response);
 	}
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		doGet(request, response);
+		System.out.println("post호출");
+		doHandle(request, response);
 	}
+	
+	private void doHandle(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
+		req.setCharacterEncoding("utf-8");
+		System.out.println("doHandle 메서드 호출");
+		String user_id = req.getParameter("user_id");
+		String user_pw = req.getParameter("user_pw");
+		System.out.println("아이디 : " + user_id);
+		System.out.println("아이디 : " + user_pw);
+	}
+	
+	
 
 }
