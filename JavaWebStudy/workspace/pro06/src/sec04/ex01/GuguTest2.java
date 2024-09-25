@@ -24,9 +24,9 @@ public class GuguTest2 extends HttpServlet {
 		response.setContentType("text/html;charset=utf-8");
 		PrintWriter out = response.getWriter();
 		int dan = Integer.parseInt(request.getParameter("dan"));
-		out.print(" <table border=1 width=800 align=center>");
+		out.print(" <table border=1 width=1200 align=center>");
 		out.print("<tr align=center bgcolor='#FFFF66'>");
-		out.print("<td colspan=2>" + dan + " 단 출력 </td>");
+		out.print("<td colspan=4>" + dan + " 단 출력 </td>");
 		out.print("</tr>");
 		
 		for(int i = 1; i < 10; i++)
@@ -36,12 +36,19 @@ public class GuguTest2 extends HttpServlet {
 			}else {
 				out.print("<tr algin=center bgcolor='#81BEF7'> ");
 			}
+			out.print("<td colspan=1 align=center>");
+			out.print("<input type='radio' name=guguRadio />"+ i);
+			out.print("</td>");
+			out.print("<td colspan=1 align=center>");
+			out.print("<input type='checkbox' />"+ i);
+			out.print("</td>");
 			out.print("<td colspan=1>");
 			out.print(dan + " * " + i);
 			out.print("</td>");
 			out.print("<td colspan=1>");
 			out.print(dan * i);
 			out.print("</td>");
+			
 			out.print("</tr>");
 		}
 		out.print("</table>"); 
