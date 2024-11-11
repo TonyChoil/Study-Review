@@ -4,35 +4,28 @@
 <meta charset="UTF-8">
 <title>jquery.uiで 年月入力、年月選択 ｜デモ｜softelメモ｜株式会社ソフテル</title>
 <meta http-equiv="author" content="SOFTEL CO. Ltd.">
-<link rel="stylesheet" href="css/jquery-ui.css">
-<script src="js/jquery-2.2.4.min.js"></script>
-<script src="js/jquery-ui.min.js"></script>
-<script src="js/jquery.ui.ympicker.js"></script>
-<script>$(function(){$("#source-viewer").text($("#source").html());});</script>
+<script src="js/jquery-1.12.4.js"></script>
+<script src="js/jquery-ui.min-1.10.4.js"></script>
+<script src="js/jquery.ui.datepicker-ja.min-1.10.4.js"></script>
+<link rel="stylesheet" type="text/css" href="css/jquery-ui2.css">
+	<script>
+		$(function(){
+			$('.c-ymd').datepicker();
+			$('.c-ym').datepicker({
+				 showOnlyMonths: true,
+				 dateFormat: "yy/mm",
+				 changeYear: true
+			});
+		
+		});
+	</script>
 </head>
-<body class="ui-widget">
-<h1>jquery.uiのdatepickerのような年月入力機能</h1>
+<body>
 
-<h3>年月入力（日本語仕様）</h3>
-
-<p><input type="text" class="ympicker"></p>
-
-<h3>年月入力（すべてデフォルト設定のときの例）</h3>
-
-<p><input type="text" class="ympicker-en"></p>
-
-<h3>こちらはおなじみ日付入力</h3>
-
-<p><input type="text" class="datepicker"></p>
-
-<hr>
-
-<h3>年月入力 ソース</h3>
-
-<p>jquery.ui.ympicker.js として外部jsにしてもよいし、以下をコピー＆ペーストしてもよい。長いのが気に入らなかったら圧縮してください。</p>
-
-<div class="ui-widget ui-widget-content ui-corner-all"><pre id="source-viewer"></pre></div>
-
-
+	<div><span>年月日</span><input type="text" name="ymd" class="c-ymd" /></div>
+	<div><span>年月</span><input type="text" name="ym" class="c-ym" /></div>
+	
 </body>
+
+
 </html>
