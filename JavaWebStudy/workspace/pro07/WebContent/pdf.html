@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iframe Example</title>
+    <style>
+        /* 기본 iframe 스타일 (작은 크기) */
+        #myIframe {
+            width: 300px;
+            height: 200px;
+            border: 1px solid #ccc;
+            transition: all 0.5s ease;
+        }
+        
+        /* 확대된 후키다시 스타일 */
+        #popupContainer {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 20%;
+            transform: translate(-35%, -50%);
+            width: 40%;
+            height: 80%;
+            background: #fff;
+            border: 2px solid #000;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            z-index: 1000;
+        }
+
+        #popupContainer iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 닫기 버튼 스타일 */
+        #closeBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- iframe 기본 화면 -->
+    <iframe id="myIframe" src="pdf1/pdf2/sample.pdf"></iframe>
+    <br><br>
+    <!-- 확대 버튼 -->
+    <button id="expandBtn">확대</button>
+
+    <!-- 후키다시 스타일 팝업 -->
+    <div id="popupContainer">
+        <button id="closeBtn">닫기</button>
+        <iframe src="pdf1/pdf2/sample.pdf#toolbar=0"></iframe>
+    </div>
+
+    <script>
+        // 확대 버튼 클릭 시 팝업 띄우기
+        document.getElementById('expandBtn').addEventListener('click', function() {
+            document.getElementById('popupContainer').style.display = 'block';
+        });
+
+        // 닫기 버튼 클릭 시 팝업 닫기
+        document.getElementById('closeBtn').addEventListener('click', function() {
+            document.getElementById('popupContainer').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

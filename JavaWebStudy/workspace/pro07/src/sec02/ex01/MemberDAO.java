@@ -1,4 +1,5 @@
 package sec02.ex01;
+
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -13,26 +14,25 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+
 public class MemberDAO {
 	/*
-	private static final String driver = "oracle.jdbc.driver.OracleDriver";
-	private static final String url = "jdbc:oracle:thin:@localhost:1521:XE";
-	private static final String user = "C##scott";
-	private static final String pwd = "tiger";
-	*/
+	 * private static final String driver = "oracle.jdbc.driver.OracleDriver";
+	 * private static final String url = "jdbc:oracle:thin:@localhost:1521:XE";
+	 * private static final String user = "C##scott";
+	 * private static final String pwd = "tiger";
+	 */
 	private Connection con;
 	private PreparedStatement pstmt;
 	private DataSource dataFactory;
-	
-	
-	
+
 	public MemberDAO() {
-		// JNDI¿¡ Á¢±ÙÇÏ±â À§ÇØ ±âº» °æ·Î (java:/comp/env)¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
+		// JNDIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½âº» ï¿½ï¿½ï¿½ (java:/comp/env)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
 		try {
 			Context ctx = new InitialContext();
 			Context envContext;
-			envContext = (Context)ctx.lookup("java:/comp/env");
-			dataFactory = (DataSource)envContext.lookup("jdbc/oracle");
+			envContext = (Context) ctx.lookup("java:/comp/env");
+			dataFactory = (DataSource) envContext.lookup("jdbc/oracle");
 		} catch (NamingException e) {
 			e.printStackTrace();
 		}
@@ -41,50 +41,51 @@ public class MemberDAO {
 	public List<MemberVO> listMembers() {
 		List<MemberVO> list = new ArrayList<MemberVO>();
 		try {
-		//connDB();
+			// connDB();
 			con = dataFactory.getConnection();
-		String query = "select * from t_member ";
-		System.out.println("PrepareStatement: " + query);
-		pstmt = con.prepareStatement(query);
+			String query = "select * from t_member ";
+			System.out.println("PrepareStatement: " + query);
+			pstmt = con.prepareStatement(query);
 
-		ResultSet rs = pstmt.executeQuery();
-		//°ú¿¬.. ¿©±â¼­ executeQuery();¿¡¼­ query¸¦ °è¼Ó ÄÄÆÄÀÏÀ» ÇÏ´Â °ÍÀÌ ¾Æ´Ñ, pstmt °´Ã¼¸¦ »ý¼ºÇÒ ¶§, query¸¦ ³Ö´Â±º.
-		while(rs.next()) {
-			String id = rs.getString("id");
-			String pwd = rs.getString("pwd");
-			String name = rs.getString("name");
-			String email = rs.getString("email");
-			Date joinDate = rs.getDate("joinDate");
-			MemberVO vo = new MemberVO();
-			vo.setEmail(email);
-			vo.setId(id);
-			vo.setJoinDate(joinDate);
-			vo.setPwd(pwd);
-			vo.setName(name);
-			list.add(vo);
-		}
-		rs.close();
-		pstmt.close();
-		con.close();
+			ResultSet rs = pstmt.executeQuery();
+			// ï¿½ï¿½ï¿½ï¿½.. ï¿½ï¿½ï¿½â¼­ executeQuery();ï¿½ï¿½ï¿½ï¿½ queryï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´ï¿½, pstmt
+			// ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, queryï¿½ï¿½ ï¿½Ö´Â±ï¿½.
+			while (rs.next()) {
+				String id = rs.getString("id");
+				String pwd = rs.getString("pwd");
+				String name = rs.getString("name");
+				String email = rs.getString("email");
+				Date joinDate = rs.getDate("joinDate");
+				MemberVO vo = new MemberVO();
+				vo.setEmail(email);
+				vo.setId(id);
+				vo.setJoinDate(joinDate);
+				vo.setPwd(pwd);
+				vo.setName(name);
+				list.add(vo);
+			}
+			rs.close();
+			pstmt.close();
+			con.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return list;
 	}
-	
+
 	/*
-	private void connDB() {
-		try {
-			Class.forName(driver);
-			System.out.println("Oracle µå¶óÀÌ¹ö ·Îµù ¼º°ø");
-			con = DriverManager.getConnection(url, user, pwd);
-			System.out.println("Connection »ý¼º ¼º°ø");
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	*/
+	 * private void connDB() {
+	 * try {
+	 * Class.forName(driver);
+	 * System.out.println("Oracle ï¿½ï¿½ï¿½ï¿½Ì¹ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½");
+	 * con = DriverManager.getConnection(url, user, pwd);
+	 * System.out.println("Connection ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½");
+	 * } catch (ClassNotFoundException e) {
+	 * e.printStackTrace();
+	 * } catch (SQLException e) {
+	 * e.printStackTrace();
+	 * }
+	 * }
+	 */
 
 }
