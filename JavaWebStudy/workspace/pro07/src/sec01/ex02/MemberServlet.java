@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet("/member")
+//@WebServlet("/member")
 public class MemberServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request,HttpServletResponse response)
                                                     throws ServletException, IOException {
@@ -22,7 +22,7 @@ public class MemberServlet extends HttpServlet {
 	
       out.print("<html><body>");
       out.print("<table  border=1><tr align='center' bgcolor='lightgreen'>");
-      out.print("<td>¾ÆÀÌµð</td><td>ºñ¹Ð¹øÈ£</td><td>ÀÌ¸§</td><td>ÀÌ¸ÞÀÏ</td><td>°¡ÀÔÀÏ</td></tr>");
+      out.print("<td>ï¿½ï¿½ï¿½Ìµï¿½</td><td>ï¿½ï¿½Ð¹ï¿½È£</td><td>ï¿½Ì¸ï¿½</td><td>ï¿½Ì¸ï¿½ï¿½ï¿½</td><td>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</td></tr>");
      
      for (int i=0; i<list.size();i++){
 		MemberVO memberVO=(MemberVO) list.get(i);
