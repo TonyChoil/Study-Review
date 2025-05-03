@@ -9,3 +9,4 @@
 .idea/
 .vsCode/
 Algorithm-test/out/production
+*.class
