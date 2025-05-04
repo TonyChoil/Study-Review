@@ -73,4 +73,59 @@ BATCH_SEP_EXECUTION
   - 특정한 조건과 흐름에 따라 Step을 구성하여 실행시키는 Job
   - Flow 객체를 실행시켜 작업을 진행함
 
- 
+## JobInstance
+실행정보를 시점마다, 단계마다 생성되는 논리적 실행 단위. 테이블에 저장을 위한 메타데이터
+
+1. 기본 개념
+- Job이 실행될 때 생성되는 Job의 논리적 실행 단위 객채로서 고유하게 식별 가능한 작업 실행을 나타냄
+- Job의 설정과 구성은 동일하지만 Job이 실행되는 시점에서 처리하는 내용은 다르기 때문에 Job의 실행을 구분해야 함
+  - 예를 들어 하루에 한 번씩 Job이 실행된다면 매일 실행되는 각각의 Job을 JobInstance로 표현합니다.
+- JobInstance 생성 및 실행
+  - 처음 시작하는 Job + JobParameter 일 경우 새로운 JobInstance 생성
+- 이전과 동일한 JOb + JobParameter으로 실행 할 경우 이미 존재하는 JobInstance를 리턴
+  - 내부적으로 JobName + jobKey (JobParameter의 해시값)를 가지고 JobInstance 객체를 얻음
+Launcer가 실행될때 Job, JobParameter를 받음
+- Job과는 1:M 관계
+
+★★★★★★★★★★
+Job, Step, Flow : 실제로 배치잡을 실행하고 구성을 하기 위한 용도
+Job, Step, Flow가 실행이 되고 수행이 되면 그 단계, 시점마다 메타데이터(Job이 실행되는 상태정보) 등을 데이터베이스에 저장하기 위해서 사용하는 용도로 "그 시점마다" 생성되는 도메인들이 Job Instance, Job excution, Job Parameters 등..
+★★★★★★★★★★
+
+2. BATCH_JOB_INSTANCE 테이블과 매핑
+- JOB_NAME(job)과 job_key(JobParameter 해시값)가 동일한 데이터는 중복해서 저장할 수 없음
+
+![alt text](image-1.png)
+
+기존의 JobInstance가 리턴되면, 예외를 발생하고 Job을 중단한다.(failed)
+
+@RequiredArgsConstructor : 생성자가 필요한 필드의 생성자를 만들어준다.
+final, @NonNull 
+final을 붙이지 않으면 해당 필드의 생성자는 만들어주지 않는다.
+
+## JobParameter
+1. 기본 개념
+- Job을 실행할 때 함께 포함되어 사용하는 파라미터를 가진 도메인 객체
+- 하나의 Job에 존재할 수 있는 여러개의 JobInstance를 구분하기 위한 용도
+- JobParameters와 JobInstance는 1:1 관계
+
+2. 생성 및 바인딩
+- 어플리케이션 실행 시 주입
+  - Java - jar LogBatch.jar requestData=20210101
+- 코드로 생성
+  - JobParameterBuilder, DefaultJobParametersConvereter
+- SpEL 이용
+  - @Value("#{JobParameter[requestData]}"), @JobScope, @StepScope 선언 필수
+
+3. BATCH_JOB_EXECUTION_PARAM 테이블과 매핑
+- JOB_EXECUTION 과 1:M의 관계
+
+jobParameters를 받는 방법
+
+`JobParameters jobParameters = contribution.getStepExecution().getJobExecution().getJobParameters();`
+
+`Map<String, Object> jobParameters1 = chunkContext.getStepContext().getJobParameters();`
+
+참조만 할 때에는 둘 다 상관 x
+변수 주소의 값을 변경할 때에는 JobParameters로 받아야하고,
+두 번째 방법은 그냥 Map에 key value값으로 저장되어 있기 때문에 값에 직접 접근해서 값을 변경하는 건 안됨. (하려면 Map의 새로운 key value 값으로 넣어주면 될 듯)
