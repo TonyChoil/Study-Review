@@ -9,7 +9,7 @@
 
 2. 스키마 생성 설정
 - 수동 생성 - 쿼리 복사 후 직접 실행
-- 자동 생성 - spring.batch.jdbc.initialize-schema 설정
+- 자동 생성 - spring.batch.jdbc.  -schema 설정
   - ALWAYS : 스크립트 항상 실행, RDBMS 설정이 되어있을 경우 내장 DB보다 우선적으로 실행
   - EMBEDDED : 내장 DB일 때만 실행되며 스키마가 자동 생성됨, 기본값.
   - NEVER : 스크립트 항상 실행 안함, 내장 DB일경우 스크립트가 생성이 안되기 때문에 오류 발생, 운영에서 수동으로 스크립트 생성 후 설정하는 것을 권장.
@@ -129,3 +129,21 @@ jobParameters를 받는 방법
 참조만 할 때에는 둘 다 상관 x
 변수 주소의 값을 변경할 때에는 JobParameters로 받아야하고,
 두 번째 방법은 그냥 Map에 key value값으로 저장되어 있기 때문에 값에 직접 접근해서 값을 변경하는 건 안됨. (하려면 Map의 새로운 key value 값으로 넣어주면 될 듯)
+
+cmd에서 mvn명령어를 사용하기 위해서는 우선 환경변수에 maven/bin 폴더가 등록이 되어있어야 한다.
+
+mvn package는 Maven브로젝트를 빌드해서 실행 가능한 JAR또는 WSR파일을 생성하는 명령어.
+
+mvn package를 실행하는 일어나는 일
+1. 소스 코드 컴파일
+2. 테스트 코드 ㅓㅁ파일 및 실행 (기본적으로 src/test/java)
+3. 패키징 (즉 .jar 또는 .war파일로 묶음)
+4. 타깃 폴더에 결과 저장 (target/your-project.jar)
+
+mvn clena : 기존의 target/ 폴더 삭제
+
+target폴더의 역할 
+1. 빌드 결과 저장소 : mvn package, mvn install 등을 실행하면 모든 결과물이 이곳에 생성
+2. 테스트 결과 : 테스트 결과 리포트 파일들도 이 폴더 안에 저장될 수 있음
+3. JAR/WAR 파일 : 최종 실행 파일이 여기 생김
+4. 임시/컴파일 파일 .class 등 컴파일된 결과물도 이 폴더에 저장
