@@ -136,7 +136,7 @@ mvn package는 Maven브로젝트를 빌드해서 실행 가능한 JAR또는 WSR�
 
 mvn package를 실행하는 일어나는 일
 1. 소스 코드 컴파일
-2. 테스트 코드 ㅓㅁ파일 및 실행 (기본적으로 src/test/java)
+2. 테스트 코드 컴파일 및 실행 (기본적으로 src/test/java)
 3. 패키징 (즉 .jar 또는 .war파일로 묶음)
 4. 타깃 폴더에 결과 저장 (target/your-project.jar)
 
@@ -161,3 +161,8 @@ target폴더의 역할
 
 2. BATCH_JOB_EXECUTION 테이블과 매핑
 - JobInstance와 JobExecution은 1:M 관계로서 JobInstance에 대한 성공/실패의 내역을 가지고 있음
+
+ ![](image-2.png)
+ JobLauncher -> Job (Job Parameter) -> run(job,parameters) -> JobRepository -> DB -> 존재 ? no -> new JobInstance -> JobExecution 
+ old JobInstance -> BatchStatus ? -> Completed : JobInstanceAlreadyCompleteException 
+ -> FAILED -> new JobExecution 
