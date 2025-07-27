@@ -3,7 +3,7 @@
 ## DB 스키마 생성 및 이해
 1. 스프링 배치 메타 데이터
 - 스프링 배치의 실행 및 관리를 위한 목적으로 여러 도메인들(Job, Step, JobParameters..)의 정보들을 저장 업데이트, 조회할 수 있는 스키마 제공
-- 과거, 현재의 실행에 대한 세세한 정보, 실행에 대한 성공과 실패 여부 등을 일목요연하게 관리함으로서 배치운용에 있어 리스크 발생시 빠른 대치 가능
+- 과거, 현재의 실행에 대한 세세한 정보, 실행에 대한 성공과 실패 여부 등을 일목요연하게 관리함으로서 배치운용에 있어 리스크 발생시 빠른 대처 가능
 - DB 와 연동할 경우 필수적으로 메타 테이블이 생성 되어야 함.
 - DB 유형별로 제공
 
@@ -59,7 +59,7 @@ BATCH_SEP_EXECUTION
 ## Job
 
 1. 기본 개념
-- 배치 계층 구조에서 가장 사위에 있는 개념으로서 하나의 배치작업 자체를 의미
+- 배치 계층 구조에서 가장 상위에 있는 개념으로서 하나의 배치작업 자체를 의미
   - API 서버의 접속 로그 데이터를 통계 서버로 옮기는 배치 인 Job 자체를 의미한다.
 - Job Configuration을 통해 생성되는 객체 단위로서 배치작업을 어떻게 구성하고 실행한 것인지 전체적으로 설정하고 명세해 놓은 객체
 - 배치 Job을 구성하기 위한 최상위 인터페이스이며 스프링 배치가 기본 구현체를 제공한다
@@ -132,7 +132,7 @@ jobParameters를 받는 방법
 
 cmd에서 mvn명령어를 사용하기 위해서는 우선 환경변수에 maven/bin 폴더가 등록이 되어있어야 한다.
 
-mvn package는 Maven브로젝트를 빌드해서 실행 가능한 JAR또는 WSR파일을 생성하는 명령어.
+mvn package는 Maven프로젝트를 빌드해서 실행 가능한 JAR또는 WSR파일을 생성하는 명령어.
 
 mvn package를 실행하는 일어나는 일
 1. 소스 코드 컴파일
@@ -166,3 +166,82 @@ target폴더의 역할
  JobLauncher -> Job (Job Parameter) -> run(job,parameters) -> JobRepository -> DB -> 존재 ? no -> new JobInstance -> JobExecution 
  old JobInstance -> BatchStatus ? -> Completed : JobInstanceAlreadyCompleteException 
  -> FAILED -> new JobExecution 
+
+## Step
+
+1. 기본 개념
+- Batch job을 구성하는 독립적인 하나의 단계로서 실제 배치 처리를 정의하고 컨트롤하는 데 필요한 모든 정보를 담고 있는 도메인 객체
+- 단순한 단일 태스크 뿐 아니라 입력과 처리 그리고 출력과 관련된 복잡한 비즈니스 로직을 포함하는 모든 설정들을 담고 있다.
+- 배치작업을 어떻게 구성하고 실행할 것인지 Job의 세부 작업을 Task 기반으로 설정하고 명세해 놓은 객체
+- 모든 Job은 하나 이상의 step으로 구성됨
+
+2. 기본 구현체
+- TaskletStep
+  - 가장 기본이 되는 클래스로서 Tasklet 타입의 구현체들을 제어한다.
+- PartitionStep 
+  - 멀티 스레드 방식으로 Step을 여러 개로 분리해서 실행한다.
+- JobStep 
+  - Step 내에서 Job을 실행하도록 한다
+- FlowStep
+  - Step 내에서 Flow를 실행하도록 한다
+
+  ![alt text](image-3.png)
+
+  ## StepExuction
+
+ 1. 기본 개념
+  - Step에 대한 한번의 시도를 의미하는 객체. Step 실행 중 발생한 정보들을 저장하고 있는 객체
+    - 시작시간, 종료시간, 상태, commit count, rollback count 등의 속성을 가짐
+  - Step이 매번 시도될 때마다 생성되며 각 Step별로 생성된다.
+  - Job이 재시작 하더라도 이미 성공적으로 완료된 Step은 재 실행되지 않고 실패한 Step만 실행된다.
+  - 이전 단계 Step이 실패해서 현재 Step을 실행하지 않았다면 StepExecution을 생성하지 않는다. Step이 실제로 시작됐을 때만 StepExecutuon을 생성한다.
+  - JobExecution과의 관계
+    - Step의 StepExecutuon이 모두 정상적으로 완료되어야 JobExecutuion이 정상적으로 완료된다.
+    - Step의 StepExecution 중 하나라도 실패하면 JobExecution은 실패한다.
+
+2. BATCH_STEP_EXECUTION 테이블과 매핑
+  - JobExecution과 StepExecution는 1:M
+  - 하나의 Job에 여러 개의 ㅣStep으로 구성했을 경우, 각 StepExecution는 하나의 JobExecution을 부모로 가진다.
+
+Step2에서 실패하면 Step3은 실행도 안 됨.
+재 시작할 경우 성공한 Step1은 실행되지 않고, Step2부터 실행 됨.
+
+## StepContribution
+
+1. 기본 개념
+  - 청크 프로세스의 변경 사항을 버퍼링 한 후 StepExecution 상태를 업데이트하는 도메인 객체
+  - 청크 커밋 직전에 StepExecution의 apply 메서드를 호출하여 상태를 업데이트 함
+  - ExitStatus의 기본 종료코드 외 사용자 정의 종료코드를 생성해서 적용 할 수 있음
+
+
+### StepContribution
+현재 Chunk 처리 중인 모든 통계 정보를 임시로 담고 있는 객체
+
+readCount : 몇 개 읽었는지
+writeCount : 몇 개 썼는지
+filterCount : 몇 개가 필터링(= 처리 중 제외) 됐는지
+skipCount : 오류 등으로 건너뛴 항목 수
+
+버퍼링한다 뜻?
+처리 중간중간 통계를 StepContribution에 기록해두지만,
+바로 DB에 반영되지 않고, 해당 청크(트랜잭션)가 끝날 때 반영된다는 의미.
+즉, 처리 도중 문제가 생기면 해당 버퍼 내용은 롤백
+
+-> 트랜잭션 롤백 시 통계가 잘못 저장되지 않도록 하기 위함.
+
+### TaskletStep
+doInTransaction : StepExecution.createStepContribution() -> StepContribution객체 생성 tasklet이 수행되는 과정
+↓
+tasklet.execute(contribution, chunkContext);
+↓
+finally에서 StepExecution.apply(contribution)
+```
+readCount += contribution.getReadSkeipCount();
+writeSkipCount += contribution.getwriteSkipCount();
+등등..해서 전체 context에 개수 추가해줌.
+exitStatus = exitStatus.and(contribution.getExitStatus());
+```
+
+commit은 청크단위로 실행되고, 일반적으로 하나의 청크가 실패하면
+rollback 후 step 중단.
+단, faultTolerant(), skip(). retry() 등으로 최대 실패 횟수 등을 지정할 수 있음
