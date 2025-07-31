@@ -245,3 +245,72 @@ exitStatus = exitStatus.and(contribution.getExitStatus());
 commit은 청크단위로 실행되고, 일반적으로 하나의 청크가 실패하면
 rollback 후 step 중단.
 단, faultTolerant(), skip(). retry() 등으로 최대 실패 횟수 등을 지정할 수 있음
+
+## ExecutionContext
+
+1. 기본 개념
+- 프레임워크에서 유지 및 관리하는 키/값으로 된 컬렉션으로 StepExecution 또는 JobExecution 객체의 상태(state)를 저장하는 공유 객체
+- DB에 직렬화 한 값으로 저장됨 - {"Key":"value"}
+- 공유 범위
+  - Step 범위 - 각 Step의 StepExecution에 저장되며 Step 간 서로 공유 안됨
+  - Job 범위 - 각 Job의 JobExecution에 저장되면 Job간 서로 공유 안되며 해당 Job의 Step간 서로 공유됨
+- Job 재 시작시 이미 저리한 Row는 건너뛰고 이후로 수행하도록 할 대 상태 정보를 활용한다.
+
+![alt text](image-4.png)
+
+ExecutionContext에 put으로 넣은 key, value값은 
+DB의 BATCH_JOB_EXECUTION_CONTEXT 테이블에
+short_context 컬럼에 저장이 된다.
+
+batch_step_execution_context
+![alt text](image-5.png)
+
+stepExecutionContext.put으로 넣으면 위의 테이블에 map의 key value가 저장되고
+아무것도 넣지 않으면 기본 step의 정보 "batch.stepType"만 저장됨
+
+```
+19. ExecutionContext 요약정리
+
+ExecutionContext는 jobExecutionContext와 stepExecutionContext로 나뉜다.
+Map으로 구성되어, put을 통해 key value 값을 넣어준다.
+
+jobExecutionContext는 하나의 jobInstance에서 공유가능하다.
+stepExecutionContext는 해당 스텝에서 사용 가능하다.
+
+즉, jobExecutionContext에 저장한 값은 해당 job이 실행되는 모든 step에서 / 실패 후 재 실행시에도 재활용 가능하며
+stepExecutionContext는 해당 step / 실패 후 재 실행시 해당 step에서 다시 사용 가능하다.
+
+각 Context는 DB의 batch_job(step)_execution_context에 저장된다.
+```
+
+## JobRepository 
+1. 기본 개념
+- 배치 작업 중의 정보를 저장하는 저장소 역할
+- Job이 언제 수행되었고, 언제 끝났으며, 몇 번 실행되었고 실행에 대한 결과 등의 배치 작업 수행과 관련된 모든 meta data를 저장함.
+  - JobLauncher, Job, Step 구현체 내부에서 CRUD 기능을 처리함
+
+  
+  ### JobRepository 설정
+  - @EnableBatchProcessing 어노테이션만 선언하면 JobRepositroy가 자동으로 빈으로 생성됨
+  - BatchConfiguerer 인터페이스를 구현하거나 BasicBatchConfiguerer를 상속해서 JobRepositroy 설정을 커스터마이징 할 수 있다.
+    - JDBC 방식으로 설정 - JobRepositoryFactoryBean
+      - 내부적으로 AOP 기술을 통해 트랜잭션 처리를 해주고 있음
+      - 트래잭션 isolation의 기본값은 SERIALIZABLE 로 최고 수준, 다른 레벨(READ_COMMITED, REPEATABLE_READ)로 지정 가능
+      - 메타테이블의 Table Prefix를 변경할 수 있음, 기본 값은 "BATCH_" 임
+    - In Memory 방식으로 설정 - MapJobRepositoryFactoryBean
+      - 성능 등의 이유로 도메인 오브젝트를 굳이 데이터베이스에 저장하고 싶지 않을 경우
+      - 보통 Test나 프로토타입의 빠른 개발이 필요할 때 사용
+
+```
+요약
+jobRepository는 배치 처리의 실행 상태와 메타데이터를 저장하고 관리하는 핵심 컴넌트.
+JobInstance, JobExecution, StepExecution 등의 메타데이터를 저장/조회하는 저장소 인터페이스
+데이터베이스를 기반으로 동작, 트랜잭션 처리와 상태 추적을 위해 사용
+
+주요 기능
+1. JobInstance저장
+  - Job 이름 + 파라미터 조합으로 생성된 인스턴스
+2. JobExecution 생성 및 저장
+  - 실제 Job이 실행될 때마다 생성되며 실행 상태, 시작/종료 시간, 상태 코드 등을 포함 
+3. 상태 관리
+Job/Step의 실행 상태(STARTED, COMPLTED, FAILED 등)을 관리하여 재시작이나 실패 처리에 활용
