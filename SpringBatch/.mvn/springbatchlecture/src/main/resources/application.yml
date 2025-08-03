@@ -1,10 +1,10 @@
 spring:
   profiles:
-    active: local
+    active: mysql
   batch:
     job:
 #      enabled: false
-      names: batchJob1
+      names: ${job.name:NONE}
 
 
 ---
@@ -31,7 +31,7 @@ spring:
     hikari:
       jdbc-url: jdbc:mysql://localhost:3306/springbatch?useUnicode=true&characterEncoding=utf8
       username: root
-      password: pass
+      password: 1234
       driver-class-name: com.mysql.jdbc.Driver
   batch:
     jdbc:
