@@ -303,7 +303,7 @@ stepExecutionContext는 해당 step / 실패 후 재 실행시 해당 step에서
 
 ```
 요약
-jobRepository는 배치 처리의 실행 상태와 메타데이터를 저장하고 관리하는 핵심 컴넌트.
+jobRepository는 배치 처리의 실행 상태와 메타데이터를 저장하고 관리하는 핵심 컴포넌트.
 JobInstance, JobExecution, StepExecution 등의 메타데이터를 저장/조회하는 저장소 인터페이스
 데이터베이스를 기반으로 동작, 트랜잭션 처리와 상태 추적을 위해 사용
 
@@ -314,3 +314,140 @@ JobInstance, JobExecution, StepExecution 등의 메타데이터를 저장/조회
   - 실제 Job이 실행될 때마다 생성되며 실행 상태, 시작/종료 시간, 상태 코드 등을 포함 
 3. 상태 관리
 Job/Step의 실행 상태(STARTED, COMPLTED, FAILED 등)을 관리하여 재시작이나 실패 처리에 활용
+```
+
+## JobLauncher
+1. 기본 개념
+- 배치 Job을 실행시키는 역할
+- Job과 Job Parameters를 인자로 받으며 요청된 배치 작업을 수행한 후 최종 client에게 JobExecution을 반환
+- 스프링 부트 배치가 구동이 되면 JobLauncher 빈이 자동 생성
+- Job 실행
+  - JobLauncher.run(Job, JobParameters)
+  - 스프링 부트 배치에서는 JobLauncherApplicationRunner 가 자동적으로 JobLauncher을 실행시킨다.
+  - 동기적 실행
+    - taskExecutor를 SyncTaskExecutor로 설정할 경우 (기본값은 SysncTaskExecutor)
+    - JobExecution을 획득하고 배치 처리를 최종 완료한 이후 Client 에게 JobExecution을 반환
+    - 스케줄러에 의한 배치처리에 적합함 - 배치처리시간이 길어도 상관없는 경우
+  - 비 동기적 실행
+    - taskExecutor가 SimpleAsyncTaskExecutor로 설정할 경우
+    - JobExeuction을 획득한 후 Client에게 바로 JobExecution을 반환하고 배치처리를 진행한다.
+    - HTTP 요청에 의한 배치처리에 적합함 - 배치처리 시간이 길 경우 응답이 늦어지지 않도록 함
+
+```
+SimpleJobLauncher JobLauncher = (SimpleJobLauncher) BasicBatchConfiguerer.getJobLauncher();
+jobLauncher.setTaskExecutor(new SimpleAsyncTaskExecutor());
+
+또는 (ChatGPT)
+    SimpleJobLauncher jobLauncher = new SimpleJobLauncher();
+    jobLauncher.setJobRepository(jobRepository);
+    jobLauncher.setTaskExecutor(new SimpleAsyncTaskExecutor());  // 핵심!
+    return jobLauncher;
+```
+
+프록시 객체 : 실제 객체를 감싸고 대리 역할을 수행하는 객체
+-즉 사용자는 진짜 객체처럼 보이지만, 실제로는 그 앞에 다른 "대리 객체(프록시)"가 존재해서 요청을 가로채거나 추가 작업을 수행하는 구조.
+
+# Section5 스프링 배치 실행 - Job
+## 배치 초기화 설정
+
+1. JobLauncherApplicationRunner
+- Spring Batch 작업을 시작하는 ApplicationRunner로서 BatchAutoConfiguration에서 생성됨
+- 스프링 부트에서 제공하는 ApllicationRunner의 구현체로 어플리케이션이 정상적으로 구동되자마자 실행됨
+- 기본적으로 빈으로 등록된 모든 job을 실행시킨다.
+
+2. BatchProperties
+- Spring Batch의 환경 설정 클래스 
+- Job 이름, 스키마 초기화 설정, 테이블 Prefix 등의 값을 설정할 수 있다.
+- application.properties파일에 설정
+  - batch:
+    job:
+      names: ${job.name:NONE}
+    initilaize-schema: NEVER
+    tablePrefix: SYSTEM
+3. Job 실행 옵션
+- 지정한 Batch Job만 실행하도록 할 수 있음
+- spring.batch.job.names: ${job.name:NONE}
+  - --job.name=hellojob
+    --job.name=hellojob,simpleJob (하나 이상의 job을 실행할 경우 쉼표로 구분)
+
+```
+spring.batch.jdbc.initialize-schema=always
+
+always : 항상 스키마 초기화 (테이블이 없으면 만들고, 있으면 DROP후 재생성)
+embedded : 내장 DB(H2 등) 사용할 때만 자동 생성 (기본값)
+never : 절대 자동으로 스키마를 생성하지 않음 (테이블 수동 생성 필요)
+
+초기 DB 세팅 후에는 never로 바꾸고 Git으로 버전 관리하는 것이 좋음
+```
+
+```
+application.yml에 table-prefix: SYSTEM_를 붙이는 건 
+table을 SYSTEM_ 을 붙여서 만드는 건 아니고,
+SYSTEM_을 붙인 테이블 정보를 불러오겠다는 것.
+
+실제 create sql은 
+org.springframework.batch:spring-batch-core
+의 schema-db2.sql에 정의되어 있기 때문에 
+table-prefix와는 관련이 없다.
+```
+
+## JobBuilderFactory
+
+1. 스프링 배치는 Job과 Step을 쉽게 생성 및 설정할 수 있도록 util성격의 빌더 클래스들을 제공함
+
+2. JobBuilderFactory
+- JobBuiler를 생성하는 팩토리 클래스로서 get(String name)메서드 제공
+- JobBuilderFactory.get("jobName")
+  - "jobName"은 스프링 배치가 Job을 실행시킬 때 참조하는 Job의 이름 
+
+3. JobBuilder
+- Job을 구성하는 설정 조건에 따라 두 개의 하위 빌더 클래스를 생성하고 실제 Job 생성을 위임한다.
+  - SimpleJobBuilder
+    - simpleJob을 생성하는 Builder클래스
+  - FlowJobBuilder
+    - FlowJob을 생성하는 Builder 클래스
+    - 내부적으로 flowJob을 생성하는 Builder클래스
+    - 내부적으로 FlowBuilder을 반환함으로써 Flow실행과 관련된 여러 설정 API를 제공한다.
+
+총 3가지 아키텍처
+
+JobBuilderFactory -> JobBuilder -> start(step) -> SimpleJobBuilder -> SimpleJob생성 
+
+start(flow) -> FlowJobBuilder -> FlowJob 생성
+
+flow(step) -> FlowJobBuilder -> flowJob생성
+
+
+FlowJobBuilder -> JobFlowBuilder -> FlowBuilder, Flow생성
+
+FlowJobBuilder는 FlowJob 생성
+JobFlowBuilder는 Flow생성
+
+![alt text](image-7.png)
+Flow는 step, flow 둘다 사용가능
+SimpleJobBuilder는 step만 받음
+
+### JobBuilder클래스의 상속구조
+![alt text](image-9.png)
+
+
+JobBuilderFactory는 get Method를 하나 가지고 있는, 내부적으로 jobBuilder를 생성하는 역할을 한다.
+
+JobBuilder에는 start method 2개, flow method가 한 개 있음.
+
+start는 step을 넣느냐, flow를 넣느냐에 따라서 생성하는 객체가 다르다.
+SimpleJobBuilder / FlowJobBuilder
+
+FlowJob으로 start를 하면, 그다음 next(step())을 넣었을 때 FlowBuilder를 반환함.
+
+## SimpleJob
+1. 기본 개념
+- SimpleJob은 Step을 실행시키는 Job 구현체로서 SimpleJobBuilder에 의해 생성된다.
+- 여러 단계의 Step으로 구성할 수 있으며 Step을 순차적으로 실행시킨다.
+- 모든 Step의 실행이 성공적으로 완료되어야 Job이 성공적으로 완료된다.
+- 맨 마지막에 실행한 Step의 BatchStatus가 Job의 최종 Status가 된다.
+
+
+.start(Step) : 처음 실행 할 Step 설정, 최초 한 번 설정. SimpleJobBuilder반환
+.next(Step) : 다음 실행할 Step설정. 횟수제한 x. 모든 next()가 실행되면 Job 종료
+.incrementer(JobParametersIncrementer) : JobParameter의 값을 자동 증가해주는 주는 JobParametersIncrementer 설정.
