@@ -451,3 +451,89 @@ FlowJob으로 start를 하면, 그다음 next(step())을 넣었을 때 FlowBuild
 .start(Step) : 처음 실행 할 Step 설정, 최초 한 번 설정. SimpleJobBuilder반환
 .next(Step) : 다음 실행할 Step설정. 횟수제한 x. 모든 next()가 실행되면 Job 종료
 .incrementer(JobParametersIncrementer) : JobParameter의 값을 자동 증가해주는 주는 JobParametersIncrementer 설정.
+-> Job을 중복없이 계속 실행할 수 있도록
+.preventRestart(true) : Job의 재시작 가능 여부 설정, 기본값은 true (실패 시 등.)
+->false로하면 실패해도 재시작 못함
+.validator(JobParameterValidator) : JobParameter를 실행하기 전에 올바른 구성이 되었는지 검증하는 JobParametersValidator 설정
+.listener(JobExecutionListener) : Job 라이프 사이클의 특정 시점에 콜백 제공받도록 JobExecutionListener 설정
+.build() : SimpleJob 생성
+
+위에서 설정한 정보들은 SimpleJobBuilder가 상속하고있는 JobBuilderHelper에서 
+CommonJobProperties properties속성으로 넣어주고,
+build()에서 불러오는 enhance라는 메소드에서 job.set(properties.get~~)으로 SimpleJob에 다 넣어준다.
+즉, SimpleJob은 위의 속성을 모두 가지고 있다는 것.
+
+## validator()
+1. 기본개념
+- Job 실행에 꼭 필요한 파라미터를 검증하는 용도
+- DefaultJobParametersValidator 구현체를 지원하며, 좀 더 복잡한 제약 조건이 있다면 인터페이스를 직접 구현할 수도 있음.
+
+2. 구 조
+JobParameterValidator
+void validate(@Nullable JobParameters parameters)
+
+3. 흐름도
+
+SimpleJob -> validate() -> JobParametersVaildator -> requiredKeys: {key, key, key ...} ex){}"date=20200102", "name=cho"}
+                                                  -> optionalKeys: {key}
+
+
+### SimpleJob 흐름도
+![alt text](image-10.png)
+
+JobLauncherApplicationRunner
+ApplicationRunner를 구현하여 어플리케이션 시작 시 스프링 배치의 자동 설정을 통해 등록된 
+Job 빈들을 찾아 실행하는 역할을 합니다.
+
+JobBuilderFactory 
+JobBuilder를 생성하고, 이 빌더를 통해 SimpleJob 또는 FlowJob 등 실제 Job객체를 설정하고 빌드합니다.
+
+# Section6 스프링 배치 실행 - Step
+
+## StepBuilderFactory / Stepbuilder
+
+1.StepBuilderFactory
+- StepBuilder를 생성하는 팩토리 클래스로서 get(String name)메서드 제공
+- StepBuilderFactory.get("stepName")
+  - "stepName"으로 Step을 생성
+
+2. StepBuilder
+- Step을 구성하는 설정 조건에 따라 다섯 개의 하위 빌더 클래스를 생성하고 실제 Step생성을 위임한다.
+
+1. TaskletStepBuilder : TaskletStep을 생성하는 기본 빌더 클래스
+2. SimpleStepBuilder : TaskletStep을 생성하며 내부저으로 청크기반의 작업을 처리하는 ChunkOrientedTasklet 클래스를 생성한다. (TaskletStepBuilder와의 차이.)
+3. PartitionStepBuilder : PartitionStep을 생성하며 멀티 스레드 방식으로 Job을 실행한다.
+4. JobStepBuilder : JobStep을 생성하여 Step안에서 Job을 실행한다.
+5. FlowStepBuilder : FlowStep을 생성하여 Step안에서 Flow를 실행한다.
+
+StepBuilderFactory -> get메소드 : StepBuilder 객체 
+-> .partitioner() -> PartitionStepBuilder객체 -> build() -> PartitionStep 객체 생성
+-> .chunk() -> SimpleStepBuilder 객체
+-> .job() -> JobStepBuilder 객체 
+-> .flow() -> FlowStepBuilder 객체 
+-> .tasklet() -> TaskletStepBuilder 객체 
+
+
+## TaskletStep
+1. 기본 개념 
+- 스프링 배치에서 제공하는 Step의 구현체로서 Tasklet을 실행시키는 도메인 객체
+- RepeatTemplate를 사용해서 Tasklet의 구문을 트랜잭션 경계 내에서 반복해서 실행함
+- Task기반과 Chunk기반으로 나누어서 Tasklet을 실행함
+
+2. Task vs Chunk기반 비교
+- 스프링 배치에서 Step의 실행 단위는 크게2가지로 나누어짐
+  - chunk 기반
+    - 하나의 큰 덩어리를 n개씩 나누어서 실행한다는 의미로 대량 처리를 하는 경우 효과적
+    - ItemReader, ItemProcessor, ItemWriter를 사용하며 청크 기반 전용 Tasklet인 ChunkOrientedTasklet구현체가 제공된다.
+    - Job -> TaskletStep -> RepeatTemplate -> [(Transaction, Loop)ChunkOrientedTasklet -> ItemReader, , ItemProcessor, ItemWriter]
+  - Task 기반
+    - ItemReader와 ItemWriter과 같은 청크 기반의 작업 보다 단일 작업 기반으로 처리되는 것이 더 효율적인 경우
+    - 주로 Tasklet 구현체를 만들어 사용
+    - 대량 처리를 하는 경우 chunk기반에 비해 더 복잡한 구현 필요
+    - Job -> TaskletStep -> RepeatTemplate -> [(Loop, Transaction)Tasklet -> BL]
+
+
+콜백이란 ? 
+어떤 동작이 끝난 다음에 호출되도록 미리 등록해 놓는 함수(또는 메서드)
+
+ex)음식이 도착하면 알람을 보냄 (이 알림 기능이 콜백임)
