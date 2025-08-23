@@ -316,7 +316,7 @@ JobInstance, JobExecution, StepExecution 등의 메타데이터를 저장/조회
 Job/Step의 실행 상태(STARTED, COMPLTED, FAILED 등)을 관리하여 재시작이나 실패 처리에 활용
 ```
 
-## JobLauncher
+## JobLauncherㅜ
 1. 기본 개념
 - 배치 Job을 실행시키는 역할
 - Job과 Job Parameters를 인자로 받으며 요청된 배치 작업을 수행한 후 최종 client에게 JobExecution을 반환
@@ -451,6 +451,62 @@ FlowJob으로 start를 하면, 그다음 next(step())을 넣었을 때 FlowBuild
 .start(Step) : 처음 실행 할 Step 설정, 최초 한 번 설정. SimpleJobBuilder반환
 .next(Step) : 다음 실행할 Step설정. 횟수제한 x. 모든 next()가 실행되면 Job 종료
 .incrementer(JobParametersIncrementer) : JobParameter의 값을 자동 증가해주는 주는 JobParametersIncrementer 설정.
+
+### validator()
+
+검증 시기
+
+기능이 시작하기 전 단계에서 한 번. job이 실행되기 전 한 번 해서 두 번 검증함.
+
+두번 검증이유 : 책임의 분리
+
+첫 번째 검증 : SimpleJob 자체의 Validator
+- Job 정의 자체가 올바른지 검증 (ex:필수속성:name, JobRepository등이 있는지)
+
+두 번째 검증 : JobLauncher 
+- JobParameters가 필수값을 포함하는지
+
+즉
+- Job 정의 검증 : 프로그램이 시작할 때 올바른 Job 구성이 준비되어 있는가?
+- 실행 시점 검증 : 실제로 실행할 수 있는 안전한 조건이 충족되었는가?
+
+validator를 따로 안만들어주면 DefaultJobParametersValidator를 사용한다.
+
+```java
+.validator(new DefaultJobParametersValidator(new String[]{"name", "date"}, new String[]{"count"}));
+
+앞의 건 required keys 뒤의 건 optional keys
+name, date : 필수 
+count : 옵션
+
+여기서 parameters에 옵션도, 필수도 아닌 키를 넘겨주게 되면 에러발생
+```
+
+
+config에서 
+
+#### job : enable : false 를 사용하는 이유
+Spring Boot가 어플 시작 시 자동으로 Batch Job을 실행하지 않도록 막는 옵션
+
+기본 동작
+- Spring Boot + Spring Batch를 같이 사용하면 컨텍스트에 등록된 모든 Job을 자동으로 한 번에 실행해줌
+- 실행 시에는 JobLauncherApplicationRunner라는 빈이 Job들을 찾아서 실행
+
+왜 enable = false 로 할까?
+
+1. 여러 개의 Job이 있을 때 
+  - 어플이 시작될 때 모든 Job이 실행되면 곤란
+  - 원하는 Job만 골라서 실행하려고
+2. 개발/테스트 환경에서
+  - 서버 실행할 때마다 Job이 돌면 DB가 초기화되거나 데이터가 중복 처리될 수 있음
+  - 이럴 땐 수동으로 실행하고 싶어서 false
+3. 웹 서버와 배치 분리 운영할 때
+  - Spring Boot로 API 서버와 배치 서버를 같은 코드베이스로 운영할 수도 있는데, 웹서버는 Job실행이 필요 없으니 꺼둠
+
+enable = false일 때 실행 방법
+- CommandLineRunner / ApplicationRunner를 이용해서 원하는 시점에 Job을 실행
+- REST API 컨트롤러 만들어서 특정 Job 호출 가능
+
 -> Job을 중복없이 계속 실행할 수 있도록
 .preventRestart(true) : Job의 재시작 가능 여부 설정, 기본값은 true (실패 시 등.)
 ->false로하면 실패해도 재시작 못함

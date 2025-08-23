@@ -1,9 +1,10 @@
 spring:
   profiles:
-    active: local
+    active: mysql
   batch:
     job:
-     enabled: true
+#      enabled: false
+      names: ${job.name:NONE}
 
 
 ---
