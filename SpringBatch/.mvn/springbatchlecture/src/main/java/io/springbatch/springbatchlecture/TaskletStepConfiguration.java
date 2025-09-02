@@ -3,21 +3,19 @@ package io.springbatch.springbatchlecture;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.job.DefaultJobParametersValidator;
-import org.springframework.batch.core.job.builder.FlowBuilder;
-import org.springframework.batch.core.job.flow.Flow;
-import org.springframework.batch.core.partition.support.Partitioner;
+import org.springframework.batch.core.scope.context.ChunkContext;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.*;
 import org.springframework.batch.item.support.ListItemReader;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.Nullable;
 
 import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Configuration
@@ -29,35 +27,29 @@ public class TaskletStepConfiguration {
     @Bean
     public Job batchJob() {
         return this.jobBuilderFactory.get("batchJob")
-                .start(taskStep())
-                .next(chunkStep())
+                .start(step1())
+                .next(step2())
                 .build();
     }
 
     @Bean
-    public Step taskStep() {
-        return stepBuilderFactory.get("taskStep")
-                .tasklet((contribution, chunkContext) -> {
-                    System.out.println("step1 has executed");
-                    return RepeatStatus.FINISHED;
-                })
-                .build();
-    }
-
-    @Bean
-    public Step chunkStep() {
-        return stepBuilderFactory.get("chunkStep")
-                .<String, String>chunk(3)
-                .reader(new ListItemReader(Arrays.asList("item1", "item2", "item3")))
-                .processor(new ItemProcessor<String, String>() {
+    public Step step1() {
+        return stepBuilderFactory.get("step1")
+                .tasklet(new Tasklet() {
                     @Override
-                    public String process(String item) throws Exception {
-                        return item.toUpperCase();
+                    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
+                            throws Exception {
+                        return RepeatStatus.FINISHED;
                     }
+
                 })
-                .writer(list -> {
-                    list.forEach(item -> System.out.println(item));
-                })
+                .build();
+    }
+
+    @Bean
+    public Step step2() {
+        return stepBuilderFactory.get("step2")
+                .tasklet(new CustomTasklet())
                 .build();
     }
 

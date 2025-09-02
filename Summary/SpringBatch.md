@@ -554,7 +554,7 @@ JobBuilder를 생성하고, 이 빌더를 통해 SimpleJob 또는 FlowJob 등 �
   - "stepName"으로 Step을 생성
 
 2. StepBuilder
-- Step을 구성하는 설정 조건에 따라 다섯 개의 하위 빌더 클래스를 생성하고 실제 Step생성을 위임한다.
+- Step을 구성하는 설정 조건에 따라 다섯 개의 하위  빌더 클래스를 생성하고 실제 Step생성을 위임한다.
 
 1. TaskletStepBuilder : TaskletStep을 생성하는 기본 빌더 클래스
 2. SimpleStepBuilder : TaskletStep을 생성하며 내부저으로 청크기반의 작업을 처리하는 ChunkOrientedTasklet 클래스를 생성한다. (TaskletStepBuilder와의 차이.)
@@ -587,9 +587,51 @@ StepBuilderFactory -> get메소드 : StepBuilder 객체
     - 주로 Tasklet 구현체를 만들어 사용
     - 대량 처리를 하는 경우 chunk기반에 비해 더 복잡한 구현 필요
     - Job -> TaskletStep -> RepeatTemplate -> [(Loop, Transaction)Tasklet -> BL]
-
+```
+chunkStep 내부 소스를 보면 reader로 items을 읽어와서,
+chunkIterator로 hasNext로 아이템을 하나 씩 가져와서 
+```
 
 콜백이란 ? 
 어떤 동작이 끝난 다음에 호출되도록 미리 등록해 놓는 함수(또는 메서드)
 
 ex)음식이 도착하면 알람을 보냄 (이 알림 기능이 콜백임)
+
+### TaskletStep - tasklet()
+1. 기본 개념
+  - Tasklet 타입의 클래스를 설정한다.
+    - Tasklet
+      - Step내에서 구성되고 실행되는 도메인 객체로서 주로 단일 태스크를 수행하기 위한 것
+      - TaskletStep에 의해 반복적으로 수행되며 반환값에 따라 계속 수행 혹은 종료한다.
+      - RepeatStatus - Tasklet의 반복 여부 상태 값
+        - RepeatStatus.FINISHED - Tasklet 종료, RepeatStatus를 null로 변화하면 RepeatStatus.FINISHED로 해석됨
+        - RepeatStatus.CONTINUALBE - Tasklet 반복
+        - RepeatStatus.FINISHED가 리턴되거나 실패 예외가 던져지기 전까지 TaskletStpe에 의해 while문 안에서 반복적으로 호출됨(무한루프 주의)
+  - 익명 클래스 혹은 구현 클래스를 만들어서 사용한다.
+  - 이 메소드를 실행하게 되면 TaskletStepBuilder가 반환되어 관련 API를 설정할 수 있다.
+  - Step에 오직 하나의 Tasklet 설정이 가능하며 두개 이상을 설정 했을 경우 마지막에 설정한 객체가 실행된다.
+
+2. 구조
+RepeatStatus execute(StepContribution, ChunkContext);
+
+```
+Stepcontribution 과 ChunkContext의 차이 
+StepContribution
+StepExecution과 관련된 통계 정보 객체
+읽기/쓰기/스킵 건수 통계 기록
+ItemWriter, Tasklet, SkipListener 등
+몇 개 읽고 썼는지, 커밋했는지 등의 숫자
+getReadCount() / incrementWriteCounte() 등
+
+ChunkContext
+Chunk실행 시 컨텍스트 정보(메타데이터 포함)
+ExecutionContex 접근, 파라미터, 상태 고융 
+Tasklet, StepListener, RetryListener 등
+Step 이름, Job/StepExecution, ExecutionContext 등 
+
+✅ 한 줄 정리
+
+🔸 StepContribution은 숫자 중심의 실행 통계,
+🔸 ChunkContext는 메타정보 + 컨텍스트 데이터 공유의 중심입니다.
+```
+
