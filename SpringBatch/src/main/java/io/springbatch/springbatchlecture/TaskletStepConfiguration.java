@@ -39,17 +39,29 @@ public class TaskletStepConfiguration {
                     @Override
                     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
                             throws Exception {
+                        System.out.println("stepCOntribution = " + contribution + ", chunkContext = " + chunkContext);
                         return RepeatStatus.FINISHED;
                     }
 
                 })
+                // .allowStartIfComplete(true)
                 .build();
     }
 
     @Bean
     public Step step2() {
         return stepBuilderFactory.get("step2")
-                .tasklet(new CustomTasklet())
+                .tasklet(new Tasklet() {
+                    @Override
+                    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
+                            throws Exception {
+                        System.out.println("stepCOntribution = " + contribution + ", chunkContext = " + chunkContext);
+                        throw new RuntimeException("step2 failed");
+                        // return RepeatStatus.FINISHED;
+                    }
+
+                })
+                .startLimit(1)
                 .build();
     }
 
