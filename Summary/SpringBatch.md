@@ -635,3 +635,102 @@ Step 이름, Job/StepExecution, ExecutionContext 등
 🔸 ChunkContext는 메타정보 + 컨텍스트 데이터 공유의 중심입니다.
 ```
 
+### startLimit() / allowStartIfComplete()
+
+1. 기본 개념
+  - 재시작 가능한 job에서 step의 이전 성공 여부와 상관없이 항상 step을 실행하기 위한 설정
+  - 실행 마다 유효성을 검증하는 Step이나 사전 작업이 꼭 필요한 Step 등 
+  - 기본적으로 COMPLETE 상태를 가진 Step은 재 시작 시 실행하지 않고 스킵한다.
+  - allow-start-if-complete가 "true"로 설정된 step은 항상 실행한다.
+
+
+```java
+public Step batchStep(){
+  return stepBuilderFactory.get("batchStep")
+  .tasklet(Tasklet)
+  .startLimit(10) //이 횟수를 넘어가는 시행은 StepExecution에서는 실행/저장되지 않고, jobExecution의 상태값이 fail-> limit exception
+  .allowStartIfComplete(true) // default : false
+  .listner(StepExecutionListener)
+  .build();
+}
+```
+
+Job 
+↓
+StepExecution-> ExecutionContext (ExitStatus exitStatus - ExistStatus.EXECUTING / updateStatus(execution, BatchStatus.STARTED)) 
+↓
+TaskletStep
+↓
+StepListener (CompositeStepExecutionListener.beforeStep()) //Step실행 전 StepExecutionListener 호출
+↓
+//Step실행 후 StepExecutionListener 호출
+CompositeStepExecutionListener.afterStep()
+↓
+RepeatStatus.CONTINUABLE
+↓
+Tasklet
+↓
+RepeatStatus.FINISHED
+
+
+```java
+//StepExecution안에  ExecutionContext를 만들어서 저장
+currentStepExecution.setExecutionContext(new ExecutionContext(executionContext));
+
+getCompositeListener().beforeStep(stepExecution); // beforeStep Listner호출
+```
+
+✅ TaskletStep
+
+제어 방식: Tasklet.execute(...) 의 반환값 RepeatStatus
+
+RepeatStatus.CONTINUABLE → 같은 Tasklet 다시 실행
+
+RepeatStatus.FINISHED → 반복 종료, Step 완료
+
+즉, Tasklet 안에서 개발자가 반복 여부를 직접 결정합니다.
+(ex: 카운트, 조건, 타임아웃 등)
+
+✅ ChunkOrientedTasklet (Chunk 기반 Step)
+
+제어 방식: Reader가 null 반환할 때까지
+
+ItemReader.read() → 아이템 있으면 계속 반복
+
+null 이 나오면 더 이상 읽을 게 없다고 판단 → Step 종료
+
+추가로, 반복 단위는 chunk(size) 또는 chunk(CompletionPolicy) 로 조절됩니다.
+(ex: 10개씩 모아서 write, 또는 30초마다 flush)
+
+ExitStatus를 설정 한 뒤, afterStep을 불러옴
+
+
+## JobStep
+
+### JobStep
+1. 기본 개념
+- Job에 속하는 step 중 외부의 Job을 포함하고 있는 Step
+- 외부의 Job이 실패하면 해당 Step이 실패하므로 결국 최종 기본 Job 도 실패한다.
+- 모든 메타데이터는 기본 Job과 외부 Job 별로 각각 저장된다.
+- 커다란 시스템을 작은 모듈로 쪼개고 job의 흐름을 관리하고자 할 때 사용할 수 있다.
+
+2. API 소개
+
+StepBuilderFactory > StepBuilder > JobStepBuilder > JobStep
+
+``` java
+public Step jobStep(){
+  return stepBuilderFactory.get("jobStep") // StepBuilder를 생성하는 팩토리, Step의 이름을 매개변수로 받음
+  .job(job) // JobStep내 에서 실행 될 Job설정, JobStepBuilder 반환
+  .launcher(JobLauncher) // Job을 실행할 JobLauncher설정
+  .parametersExtractor(JobParametersExtractor) // Step의 ExecutionContext를 Job이 실행되는 데 필요한 JobParameters로 변환
+  .build() // JobStep을 생성
+}
+```
+
+ParentJob > JobStep -> Childjob (step1) -> Step2
+
+두 개의 Job은 다른 Job Instance로 별도 저장/관리된다.
+
+childeJob은 extractor.setKeys(""); 로 추가 파라미터를 전달할 수 있고,
+parentJob이 가지고있는 parameter도 기본 가지고 있다.
