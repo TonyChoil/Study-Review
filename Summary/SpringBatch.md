@@ -734,3 +734,97 @@ ParentJob > JobStep -> Childjob (step1) -> Step2
 
 childeJob은 extractor.setKeys(""); 로 추가 파라미터를 전달할 수 있고,
 parentJob이 가지고있는 parameter도 기본 가지고 있다.
+
+### Quiz
+StepBuilderFactory의 역할
+JobBuilderFactory와 유사하게 StepName을 받아 StepBuilder를 생성하는 역할
+어떤 종류의 스텝(Tasklet, Chunk, Job 등)을 만들지는 이후 API설정에 따라 결정되는 StepBuilder의 하위 빌더에 의해 정해짐.
+
+TaskletStep에서 Task-based 처리와 Chunk-based 처리의 주요 차이점은?
+Task-based는 사용자 정의 로직을, Chunk-based는 Reader/Processor/Writer를 사용한다.
+
+# Section7 스프링 배치 실행 - Flow
+
+1. 기본개념
+  - Step을 순차적으로만 구성하는 것이 아닌 특정한 상태에 따라 흐름을 전환하도록 구성할 수 있으며 FlowJobBuilder에 의해 생성된다.
+  - Step이 실패하더라도 Job은 실패로 끝나지 않도록 해야 하는 경우
+  - Step이 성공 했을 때 다음에 실행해야 할 Step을 구분해서 실행해야 하는 경우
+- Flow와 Job의 흐름을 구성하는데만 관여하고 실제 비즈니스 로직은 Step에서 이루어진다.
+- 내부적으로 SimpleFlow 객체를 포함하고 있으며 Job실행 시 호출한다.
+
+JobBuilderFactory -> JobBuilder -> JobFlowBuilder > FlowBuilder > Flowjob
+
+```java
+public Job batchJob(){
+  return jobBuilderFactory("batchJob")
+        .start(Step) // Flow를 시작하는 Step 설정
+        .on(String pattern) // Step의 실행 결과로 돌려받는 종료상태(ExitStatus)를 캐치하여 매칭하는  패턴, TransitionBuilder 반환
+        .to(Step) // 다음으로 이동할 Step 지정
+        .stop() / fail() / end() / stopAndRestart() // Flow를 중지/실패/종료 하도록 Flow 종료
+        .from(Step) // 이전 단계에서 정의한 Step의 Flow를 추가적으로 정의함
+        .next(Step) // 다음으로 이동할 Step 지정
+        .end() // build() 앞에 위치하면 FlowBuilder를 종료하고 SimpleFlow객체 생성
+        .build() // FlowJob 생성하고 flow 필드에 SimpleFlow 저장
+}
+```
+
+![alt text](image-11.png)
+
+on(String pattern)이 TransitionBuilder를 불러와, 그 안에 있는 to(), stop(), fail(), end(), stopAndRestart()를 사용할 수 있게되고,
+끝나면 FlowBuilder를 다시 반환하여, 다른 API기능을 다시 사용할 수 있게된다.
+
+
+FlowJob에서 on("FAILED").to(step3())
+
+의 경우, Failed한 Step의 상태값은 ABANDONED, ExitCode는 FAILED
+
+SimpleJobBuilder 생성
+on이라는 메소드에서 JobFlowBuilder(new FlowJobBuilder) 
+
+on에서 TransitionBuilder를 return
+
+ FlowJob이 simpleFlow를 필드로 가지고있어서 실행시켜줌.
+ 
+### start() / next()
+
+```java
+public Job batchJob(){
+  return jobBuilderFactory.get("batchJob")
+              .start(Flow) // 처음  실행할 Flow 설정, JobFlowBuilder가 반환된다.
+              // 여기에 Step이 인자로 오게 되면 SimpleJobBuilder 반환
+              .next(Step or Flow or JobExecutionDecider)
+              .on(String pattern) // 여기서 조건을 줘야만 실패해도 Job이 실패하지 않도록 구성함. Flow라고 무조건 성공하는건아님.
+              .to(Step)
+              .stop() / fail() / end() / stopAndRestart()
+              .end()
+              .build();
+}
+```
+
+### on() / to() / stop() / fail() / end() / stopAndRestart()
+
+on : 위에서 준 Step이나 Flow의 실행 종료코드가 pattern과 일치한다면, to, stop, fail, end, stopAndRestart 등 다음 단계로 보내라.
+일치하지 않는다면 안 보냄.
+
+### Transition
+기본 개념
+Transition
+1. Flow내 Step의 조건부 전환(전이)를 정의함
+2. Job의 API설정에서 on(String pattern)메소드를 호출하면 TransitionBuilder가 반환되어 Transition Flow를 구성할 수 있음
+3. Step의 종료상태(ExitStatus)가 어떤 pattern과도 매칭되지 않으면 스프링 배치에서 예외를 발생하고 Job은 실패
+4. transition은 구체적인 것부터 그렇지 않은 순서로 적용된다.
+
+API
+1. on(String pattern)
+  - Step의 실행 결과로 돌려받는 종료상태(ExitStatus)와 매칭하는 패턴 스키마. BatchStatus와 매칭하는 것이 아님
+  - pattern과 ExitStatus와 매칭이 되면 다음으로 실행할 Step을 지정할 수 있다.
+  - 특수문자는 두 가지만 허용
+    - "*" : 0개 이상의 문자와 매칭, 모든 ExitStatus와 매칭된다.
+    - "?" : 정확히 1개의 문자와 매칭
+    - ex) "c*t"는 "cat과 "count"에 매칭되고, "c?t"는 "cat"에는 되고 "count"는 안됨
+
+2. to()
+  - 다음으로 실행할 단계를 지정
+3. from()
+  - 이전 단계에서 정의한 Transition을 새롭게 추가 정의함
+  

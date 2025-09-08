@@ -2,6 +2,8 @@ package io.springbatch.springbatchlecture;
 
 import lombok.RequiredArgsConstructor;
 
+import javax.management.RuntimeErrorException;
+
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -11,6 +13,7 @@ import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.job.DefaultJobParametersExtractor;
 import org.springframework.batch.core.step.tasklet.Tasklet;
@@ -27,46 +30,44 @@ public class JobStepConfiguration {
     private final StepBuilderFactory stepBuilderFactory;
 
     @Bean
-    public Job parentJob() {
-        return this.jobBuilderFactory.get("parentJob")
-                .start(jobStep(null))
-                .next(step2())
+    public Job batchJob() {
+        return this.jobBuilderFactory.get("batchJob")
+                .incrementer(new RunIdIncrementer())
+                .start(step1())
+                .on("COMPLETED").to(step3())
+                .from(step1())
+                .on("FAILED").to(step2())
+                .end()
                 .build();
     }
 
-    @Bean
-    public Step jobStep(JobLauncher jobLauncher) {
-        return stepBuilderFactory.get("jobStep")
-                .job(childJob())
-                .launcher(jobLauncher)
-                .parametersExtractor(jobParameterExtractor())
-                .listener(new StepExecutionListener() {
-
+    private Step step3() {
+        return stepBuilderFactory.get("step3")
+                .tasklet(new Tasklet() {
                     @Override
-                    public void beforeStep(StepExecution stepExecution) {
-                        stepExecution.getExecutionContext().putString("name", "user1");
-                    }
+                    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
+                            throws Exception {
+                        System.out.println("step3 started");
 
-                    @Override
-                    @Nullable
-                    public ExitStatus afterStep(StepExecution stepExecution) {
-                        throw new UnsupportedOperationException("Unimplemented method 'afterStep'");
+                        return RepeatStatus.FINISHED;
                     }
 
                 })
                 .build();
     }
 
-    private DefaultJobParametersExtractor jobParameterExtractor() {
-        DefaultJobParametersExtractor extractor = new DefaultJobParametersExtractor();
-        extractor.setKeys(new String[] { "name" });
-        return extractor;
-    }
+    private Step step2() {
+        return stepBuilderFactory.get("step2")
+                .tasklet(new Tasklet() {
+                    @Override
+                    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
+                            throws Exception {
 
-    @Bean
-    public Job childJob() {
-        return jobBuilderFactory.get("childJob")
-                .start(step1())
+                        System.out.println("step2 started");
+                        return RepeatStatus.FINISHED;
+                    }
+
+                })
                 .build();
     }
 
@@ -78,24 +79,9 @@ public class JobStepConfiguration {
                     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
                             throws Exception {
 
-                        return RepeatStatus.FINISHED;
-                    }
-
-                })
-                .build();
-    }
-
-    @Bean
-    pubic Step
-
-    step2() {
-        return stepBuilderFactory.get("step2")
-                .tasklet(new Tasklet() {
-                    @Override
-                    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
-                            throws Exception {
-
-                        return RepeatStatus.FINISHED;
+                        System.out.println("step1 started");
+                        throw new RuntimeException("step1 failed");
+                        // return RepeatStatus.FINISHED;
                     }
 
                 })
