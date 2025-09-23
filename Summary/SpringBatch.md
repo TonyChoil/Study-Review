@@ -813,7 +813,7 @@ Transition
 2. Job의 API설정에서 on(String pattern)메소드를 호출하면 TransitionBuilder가 반환되어 Transition Flow를 구성할 수 있음
 3. Step의 종료상태(ExitStatus)가 어떤 pattern과도 매칭되지 않으면 스프링 배치에서 예외를 발생하고 Job은 실패
 4. transition은 구체적인 것부터 그렇지 않은 순서로 적용된다.
-
+(ex : Step 1 -> A -> Step2 / Step1 -> * -> Step 3 : A를 제외한 나머지는 Step3을 실행) 
 API
 1. on(String pattern)
   - Step의 실행 결과로 돌려받는 종료상태(ExitStatus)와 매칭하는 패턴 스키마. BatchStatus와 매칭하는 것이 아님
@@ -827,4 +827,37 @@ API
   - 다음으로 실행할 단계를 지정
 3. from()
   - 이전 단계에서 정의한 Transition을 새롭게 추가 정의함
-  
+
+Job을 중단하거나 종료하는 Transition API
+- Flow가 실행되면 FlowExecutionStatus에 상태값이 저장되고 최종적으로 Joㅠ의 BatchStatus와 ExitStatus에 반영된다.
+- Step의 BatchStatus 및 ExitStatus에는 아무런 영향을 주지 않고 Job의 상태만을 변경한다.
+
+.end() : COMPLETED
+
+on("FAILED:).end() : step은 FAILED, JOB : COMPLETED
+
+
+# Section7 스프링 배치 실행 - 사용자 정의 ExitStatus
+1. 기본 개념
+  - ExistStatus에 존재하지 않는 exitCode를 새롭게 정의해서 설정
+  - StepExecutionListener의 afterStep()메서드에서 Custom exitCode 생성 후 새로운 ExitStatus 반환
+  - Step 실행 후 완료 시점에서 현재 exitCode를 사용자 정의 exitCode로 수정할 수 있음
+```java
+    @Bean
+    public Job batchJob() {
+        return this.jobBuilderFactory.get("batchJob")
+                .incrementer(new RunIdIncrementer())
+                .start(step1())
+                .on("FAILED") 
+                .to(step2())
+                .on("PASS")
+                .stop()
+                .end()
+                .build();
+    }
+이 경우, StepExecution의 step2는 COMPLETE, COMPETE이더라도,
+ 내가 정의한 on이외에 처리가 없기 때문에, JOBSTATUS는 FAILED, EXITCODE도 FAILED가 된다.
+반면, EXITSTATUS가 FAILED라도 상태가 COMPLETED가 됨. 
+```
+
+

@@ -22,6 +22,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.Nullable;
 
+import io.springbatch.PassCheckingListener;
+
 @RequiredArgsConstructor
 @Configuration
 public class JobStepConfiguration {
@@ -34,40 +36,11 @@ public class JobStepConfiguration {
         return this.jobBuilderFactory.get("batchJob")
                 .incrementer(new RunIdIncrementer())
                 .start(step1())
-                .on("COMPLETED").to(step3())
-                .from(step1())
-                .on("FAILED").to(step2())
+                .on("FAILED")
+                .to(step2())
+                .on("PASS")
+                .stop()
                 .end()
-                .build();
-    }
-
-    private Step step3() {
-        return stepBuilderFactory.get("step3")
-                .tasklet(new Tasklet() {
-                    @Override
-                    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
-                            throws Exception {
-                        System.out.println("step3 started");
-
-                        return RepeatStatus.FINISHED;
-                    }
-
-                })
-                .build();
-    }
-
-    private Step step2() {
-        return stepBuilderFactory.get("step2")
-                .tasklet(new Tasklet() {
-                    @Override
-                    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
-                            throws Exception {
-
-                        System.out.println("step2 started");
-                        return RepeatStatus.FINISHED;
-                    }
-
-                })
                 .build();
     }
 
@@ -78,14 +51,25 @@ public class JobStepConfiguration {
                     @Override
                     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
                             throws Exception {
-
-                        System.out.println("step1 started");
-                        throw new RuntimeException("step1 failed");
-                        // return RepeatStatus.FINISHED;
+                        System.out.println(">> step1 has executed");
+                        contribution.getStepExecution().setExitStatus(ExitStatus.FAILED);
+                        return RepeatStatus.FINISHED;
                     }
-
-                })
-                .build();
+                }).build();
     }
 
+    @Bean
+    public Step step2() {
+        return stepBuilderFactory.get("step2")
+                .tasklet(new Tasklet() {
+                    @Override
+                    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext)
+                            throws Exception {
+                        System.out.println(">> step2 has executed");
+                        return RepeatStatus.FINISHED;
+                    }
+                })
+                .listener(new PassCheckingListener())
+                .build();
+    }
 }
