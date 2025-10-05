@@ -860,4 +860,11 @@ on("FAILED:).end() : step은 FAILED, JOB : COMPLETED
 반면, EXITSTATUS가 FAILED라도 상태가 COMPLETED가 됨. 
 ```
 
+## FlowJob
+만약 step1의 status : COMPLETED 이고, exitCode가 fail이면,
+
+SpringBatch는 기본적으로 이전 Step이 완료된 경우에만 다음 Step을 실행.
+완료라고 판단하는 두 조건
+- StepExecution.status == COMPLETED
+- ExitStatus == ExitStatus.COMPLETED (혹은 FlowExecutionStatus.COMPLETED)
 
